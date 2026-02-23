@@ -21,6 +21,7 @@ jobs:
           command: curl -LsSf https://astral.sh/uv/install.sh | sh
       - prodsec/security_scans:
           mode: auto
+          cli-version: "1.1302.1"
           open-source-additional-arguments: --exclude=mocked_data,mcp-builder,slack-gif-creator
           iac-scan: disabled
 
