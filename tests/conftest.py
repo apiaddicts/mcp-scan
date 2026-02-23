@@ -7,10 +7,16 @@ from pathlib import Path
 
 import pytest
 
-from mcp_scan.utils import TempFile
+from mcp_scan.utils import TempFile, ensure_unicode_console
 
 # Repository root (parent of tests/)
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _ensure_unicode_console():
+    """Reconfigure stdout/stderr to UTF-8 on Windows so tests can print Unicode (e.g. emoji) without UnicodeEncodeError."""
+    ensure_unicode_console()
 
 
 def _get_binary_path() -> Path:
