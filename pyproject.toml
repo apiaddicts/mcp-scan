@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.scripts]
-agent-scan = "agent_scan.run:run"
+snyk-agent-scan = "agent_scan.run:run"
 
 [build-system]
 requires = ["hatchling"]
