@@ -24,7 +24,7 @@ Device means any device that can access the Service such as a computer, a cellph
 
 Feedback means feedback, innovations or suggestions sent by You regarding the attributes, performance or features of our Service.
 
-Service refers to the MCP-Scan API.
+Service refers to the Agent Scan API.
 
 Terms and Conditions (also referred as "Terms") mean these Terms and Conditions that form the entire agreement between You and the Company regarding the use of the Service.
 
