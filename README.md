@@ -76,7 +76,7 @@ Agent Scan is a security scanning tool to both scan and inspect the supply chain
 
 Agent Scan operates in two main modes which can be used jointly or separately:
 
-1. **Scan Mode**: `snyk-agent-scan scan` scans the current machine for agents and agent components such as skills and MCP servers. Upon completion, it will output a comprehensive report for the user to review.
+1. **Scan Mode**: The CLI command `snyk-agent-scan` scans the current machine for agents and agent components such as skills and MCP servers. Upon completion, it will output a comprehensive report for the user to review.
 
 2. **Background Mode** (MDM, Crowdstrike). Agent Scan scans the machine in regular intervals in the background, and reports the results to a [Snyk Evo](https://evo.ai.snyk.io) instance. This can be used by security teams to monitor the company-wide agent supply chain in a central location. To set this up, please [contact us](https://evo.ai.snyk.io/#contact-us).
 
