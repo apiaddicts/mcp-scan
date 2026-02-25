@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mcp_scan.cli import parse_control_servers
-from mcp_scan.models import ScanPathResult
+from agent_scan.cli import parse_control_servers
+from agent_scan.models import ScanPathResult
 
 
 class TestControlServerParsing:
@@ -228,9 +228,9 @@ class TestCLIArgumentParsing:
         mock_result = ScanPathResult(path="/test/path")
 
         with (
-            patch("mcp_scan.cli.MCPScanner") as MockScanner,
-            patch("mcp_scan.cli.upload") as mock_upload,
-            patch("mcp_scan.cli.print_scan_result"),
+            patch("agent_scan.cli.MCPScanner") as MockScanner,
+            patch("agent_scan.cli.upload") as mock_upload,
+            patch("agent_scan.cli.print_scan_result"),
         ):
             # Setup scanner mock
             mock_scanner_instance = AsyncMock()
@@ -263,7 +263,7 @@ class TestCLIArgumentParsing:
 
             with patch.object(sys, "argv", test_argv):
                 # Import and run the relevant parts
-                from mcp_scan.cli import parse_control_servers
+                from agent_scan.cli import parse_control_servers
 
                 control_servers = parse_control_servers(test_argv)
 
@@ -282,7 +282,7 @@ class TestControlServerHeaderParsing:
 
     def test_parse_headers_single_header(self):
         """Test parsing a single header."""
-        from mcp_scan.utils import parse_headers
+        from agent_scan.utils import parse_headers
 
         headers = ["Auth: token123"]
         result = parse_headers(headers)
@@ -291,7 +291,7 @@ class TestControlServerHeaderParsing:
 
     def test_parse_headers_multiple_headers(self):
         """Test parsing multiple headers."""
-        from mcp_scan.utils import parse_headers
+        from agent_scan.utils import parse_headers
 
         headers = ["Auth: token123", "X-Custom: value456"]
         result = parse_headers(headers)
@@ -300,7 +300,7 @@ class TestControlServerHeaderParsing:
 
     def test_parse_headers_none_input(self):
         """Test parsing None returns empty dict."""
-        from mcp_scan.utils import parse_headers
+        from agent_scan.utils import parse_headers
 
         result = parse_headers(None)
 
@@ -308,7 +308,7 @@ class TestControlServerHeaderParsing:
 
     def test_parse_headers_empty_list(self):
         """Test parsing empty list returns empty dict."""
-        from mcp_scan.utils import parse_headers
+        from agent_scan.utils import parse_headers
 
         result = parse_headers([])
 
@@ -316,7 +316,7 @@ class TestControlServerHeaderParsing:
 
     def test_parse_headers_invalid_format_raises_error(self):
         """Test that invalid header format raises ValueError."""
-        from mcp_scan.utils import parse_headers
+        from agent_scan.utils import parse_headers
 
         headers = ["InvalidHeaderWithoutColon"]
 
@@ -332,11 +332,11 @@ class TestControlServerUploadIntegration:
         """Test that upload is called once for each control server."""
         from argparse import Namespace
 
-        from mcp_scan.cli import run_scan_inspect
+        from agent_scan.cli import run_scan_inspect
 
         mock_result = ScanPathResult(path="/test/path")
 
-        with patch("mcp_scan.cli.MCPScanner") as MockScanner, patch("mcp_scan.cli.upload") as mock_upload:
+        with patch("agent_scan.cli.MCPScanner") as MockScanner, patch("agent_scan.cli.upload") as mock_upload:
             # Setup scanner mock
             mock_scanner_instance = AsyncMock()
             mock_scanner_instance.scan = AsyncMock(return_value=[mock_result])
@@ -384,11 +384,11 @@ class TestControlServerUploadIntegration:
         """Test that upload is not called when no control servers are specified."""
         from argparse import Namespace
 
-        from mcp_scan.cli import run_scan_inspect
+        from agent_scan.cli import run_scan_inspect
 
         mock_result = ScanPathResult(path="/test/path")
 
-        with patch("mcp_scan.cli.MCPScanner") as MockScanner, patch("mcp_scan.cli.upload") as mock_upload:
+        with patch("agent_scan.cli.MCPScanner") as MockScanner, patch("agent_scan.cli.upload") as mock_upload:
             # Setup scanner mock
             mock_scanner_instance = AsyncMock()
             mock_scanner_instance.scan = AsyncMock(return_value=[mock_result])
@@ -413,11 +413,11 @@ class TestControlServerUploadIntegration:
         """Test that upload is called with skip_ssl_verify option."""
         from argparse import Namespace
 
-        from mcp_scan.cli import run_scan_inspect
+        from agent_scan.cli import run_scan_inspect
 
         mock_result = ScanPathResult(path="/test/path")
 
-        with patch("mcp_scan.cli.MCPScanner") as MockScanner, patch("mcp_scan.cli.upload") as mock_upload:
+        with patch("agent_scan.cli.MCPScanner") as MockScanner, patch("agent_scan.cli.upload") as mock_upload:
             # Setup scanner mock
             mock_scanner_instance = AsyncMock()
             mock_scanner_instance.scan = AsyncMock(return_value=[mock_result])
@@ -468,12 +468,12 @@ class TestJSONOutput:
         import sys
         from argparse import Namespace
 
-        from mcp_scan.cli import print_scan_inspect
-        from mcp_scan.models import ScanPathResult
+        from agent_scan.cli import print_scan_inspect
+        from agent_scan.models import ScanPathResult
 
         mock_result = ScanPathResult(path="/test/path.json")
 
-        with patch("mcp_scan.cli.MCPScanner") as MockScanner, patch("mcp_scan.cli.upload"):
+        with patch("agent_scan.cli.MCPScanner") as MockScanner, patch("agent_scan.cli.upload"):
             # Setup scanner mock
             mock_scanner_instance = AsyncMock()
             mock_scanner_instance.scan = AsyncMock(return_value=[mock_result])
@@ -516,12 +516,12 @@ class TestJSONOutput:
         import sys
         from argparse import Namespace
 
-        from mcp_scan.cli import print_scan_inspect
-        from mcp_scan.models import ScanPathResult
+        from agent_scan.cli import print_scan_inspect
+        from agent_scan.models import ScanPathResult
 
         mock_result = ScanPathResult(path="/test/path.json")
 
-        with patch("mcp_scan.cli.MCPScanner") as MockScanner, patch("mcp_scan.cli.upload") as mock_upload:
+        with patch("agent_scan.cli.MCPScanner") as MockScanner, patch("agent_scan.cli.upload") as mock_upload:
             # Setup scanner mock
             mock_scanner_instance = AsyncMock()
             mock_scanner_instance.scan = AsyncMock(return_value=[mock_result])

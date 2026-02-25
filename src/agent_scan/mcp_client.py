@@ -22,7 +22,7 @@ from mcp.types import (
     ToolsCapability,
 )
 
-from mcp_scan.models import (
+from agent_scan.models import (
     ClaudeCodeConfigFile,
     ClaudeConfigFile,
     FileTokenStorage,
@@ -36,8 +36,8 @@ from mcp_scan.models import (
     VSCodeConfigFile,
     VSCodeMCPConfig,
 )
-from mcp_scan.traffic_capture import PipeStderrCapture, TrafficCapture, capturing_client
-from mcp_scan.utils import resolve_command_and_args
+from agent_scan.traffic_capture import PipeStderrCapture, TrafficCapture, capturing_client
+from agent_scan.utils import resolve_command_and_args
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)

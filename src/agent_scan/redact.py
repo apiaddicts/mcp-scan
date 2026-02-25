@@ -13,7 +13,7 @@ import logging
 import re
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from mcp_scan.models import RemoteServer, ScanPathResult, ServerScanResult, StdioServer
+from agent_scan.models import RemoteServer, ScanPathResult, ServerScanResult, StdioServer
 
 logger = logging.getLogger(__name__)
 

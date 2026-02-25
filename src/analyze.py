@@ -1,12 +1,12 @@
-from mcp_scan.inspect import inspected_client_to_scan_path_result
-from mcp_scan.models import (
+from agent_scan.inspect import inspected_client_to_scan_path_result
+from agent_scan.models import (
     AnalysisError,
     AnalyzedMachine,
     ClientAnalysis,
     InspectedMachine,
     NewIssue,
 )
-from mcp_scan.verify_api import analyze_machine as analyze_scan_path_results
+from agent_scan.verify_api import analyze_machine as analyze_scan_path_results
 
 
 async def analyze_machine(

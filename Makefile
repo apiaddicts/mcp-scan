@@ -7,29 +7,29 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
 endif
 
 run:
-	uv run -m src.mcp_scan.run ${RUN_ARGS}
+	uv run -m src.agent_scan.run ${RUN_ARGS}
 
 test-all:
 	uv sync
 	uv pip install -e ".[test,proxy]"
-	MCP_SCAN_ENVIRONMENT=test uv run python -m pytest
+	AGENT_SCAN_ENVIRONMENT=test uv run python -m pytest
 
 test-static:
 	uv sync
 	uv pip install -e ".[test]"
-	MCP_SCAN_ENVIRONMENT=test uv run python -m pytest
+	AGENT_SCAN_ENVIRONMENT=test uv run python -m pytest
 
 test: test-all
 
 ci-static:
 	uv sync
 	uv pip install -e ".[test]"
-	MCP_SCAN_ENVIRONMENT=ci uv run python -m pytest
+	AGENT_SCAN_ENVIRONMENT=ci uv run python -m pytest
 
 ci-proxy:
 	uv sync
 	uv pip install -e ".[test,proxy]"
-	MCP_SCAN_ENVIRONMENT=ci uv run python -m pytest
+	AGENT_SCAN_ENVIRONMENT=ci uv run python -m pytest
 
 ci: ci-static ci-proxy
 
@@ -40,15 +40,15 @@ pre-commit:
 
 clean:
 	rm -rf ./dist
-	rm -rf ./mcp_scan/mcp_scan.egg-info
+	rm -rf ./agent_scan/agent_scan.egg-info
 	rm -rf ./npm/dist
 	rm -rf ./ame.spec
-	rm -rf ./mcp-scan.spec
+	rm -rf ./agent-scan.spec
 
 binary:
 	uv sync
 	uv pip install -e .[dev]
-	if [ -n "${APPLE_SIGNING_IDENTITY}" ]; then uv run pyinstaller --onefile --name mcp-scan src/mcp_scan/run.py --codesign-identity "${APPLE_SIGNING_IDENTITY}"; else uv run pyinstaller --onefile --name mcp-scan src/mcp_scan/run.py; fi
+	if [ -n "${APPLE_SIGNING_IDENTITY}" ]; then uv run pyinstaller --onefile --name agent-scan src/agent_scan/run.py --codesign-identity "${APPLE_SIGNING_IDENTITY}"; else uv run pyinstaller --onefile --name agent-scan src/agent_scan/run.py; fi
 
 build: clean
 	uv build --no-sources
@@ -56,7 +56,7 @@ build: clean
 shiv: build
 	uv pip install -e .[dev]
 	mkdir -p dist
-	uv run shiv -c mcp-scan -o dist/mcp-scan.pyz --python "/usr/bin/env python3" dist/*.whl
+	uv run shiv -c agent-scan -o dist/agent-scan.pyz --python "/usr/bin/env python3" dist/*.whl
 
 publish-pypi: build
 	uv publish --token ${PYPI_TOKEN}
@@ -72,7 +72,7 @@ reset-uv:
 	uv venv
 
 install-dev-server-cursor:
-	uv run --directory $PWD -m src.mcp_scan.run install-mcp-server ~/.cursor/mcp.json --background --tool --client-name Cursor
+	uv run --directory $PWD -m src.agent_scan.run install-mcp-server ~/.cursor/mcp.json --background --tool --client-name Cursor
 
 install-dev-server-windsurf:
-	uv run --directory $PWD -m src.mcp_scan.run install-mcp-server ~/.codeium/windsurf/mcp_config.json --background --tool --client-name Windsurf
+	uv run --directory $PWD -m src.agent_scan.run install-mcp-server ~/.codeium/windsurf/mcp_config.json --background --tool --client-name Windsurf

@@ -6,11 +6,11 @@ import os
 import aiohttp
 import rich
 
-from mcp_scan.identity import IdentityManager
-from mcp_scan.models import ScanPathResult, ScanPathResultsCreate, ScanUserInfo
-from mcp_scan.redact import redact_scan_result
-from mcp_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
-from mcp_scan.well_known_clients import get_client_from_path
+from agent_scan.identity import IdentityManager
+from agent_scan.models import ScanPathResult, ScanPathResultsCreate, ScanUserInfo
+from agent_scan.redact import redact_scan_result
+from agent_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
+from agent_scan.well_known_clients import get_client_from_path
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,8 @@ identity = IdentityManager()
 
 
 def get_hostname() -> str:
-    ci_hostname = os.getenv("MCP_SCAN_CI_HOSTNAME")
-    if os.getenv("MCP_SCAN_ENVIRONMENT") == "ci" and ci_hostname:
+    ci_hostname = os.getenv("AGENT_SCAN_CI_HOSTNAME")
+    if os.getenv("AGENT_SCAN_ENVIRONMENT") == "ci" and ci_hostname:
         return ci_hostname
     else:
         try:

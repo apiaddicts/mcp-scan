@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from mcp_scan.lib import inspect as inspect_api
-from mcp_scan.models import StaticToolsServer
+from agent_scan.lib import inspect as inspect_api
+from agent_scan.models import StaticToolsServer
 
 
 @pytest.mark.asyncio

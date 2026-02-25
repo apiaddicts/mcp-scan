@@ -6,7 +6,7 @@ from rich.text import Text
 from rich.traceback import Traceback as rTraceback
 from rich.tree import Tree
 
-from mcp_scan.models import (
+from agent_scan.models import (
     Entity,
     Issue,
     ScanError,
@@ -204,7 +204,7 @@ def format_entity_line(
         hash = hash_entity(entity)
         messages.append(
             f"[bold]You can whitelist this {entity_type_to_str(entity)} "
-            f"by running `mcp-scan whitelist {entity_type_to_str(entity)} "
+            f"by running `agent-scan whitelist {entity_type_to_str(entity)} "
             f"'{entity.name}' {hash}`[/bold]"
         )
 

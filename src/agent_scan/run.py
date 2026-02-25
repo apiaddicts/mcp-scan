@@ -1,6 +1,6 @@
 import asyncio
 
-from mcp_scan.cli import main
+from agent_scan.cli import main
 
 
 def run():

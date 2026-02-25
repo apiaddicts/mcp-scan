@@ -2,8 +2,8 @@ import asyncio
 import json
 import logging
 
-from mcp_scan import inspect, scan
-from mcp_scan.printer import print_scan_result
+from agent_scan import inspect, scan
+from agent_scan.printer import print_scan_result
 
 # no logging by default
 logging.getLogger().setLevel(logging.CRITICAL + 1)  # Higher than any standard level

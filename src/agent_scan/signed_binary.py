@@ -3,8 +3,8 @@ import re
 import subprocess
 import sys
 
-from mcp_scan.models import ScanPathResult, StdioServer
-from mcp_scan.utils import resolve_command_and_args
+from agent_scan.models import ScanPathResult, StdioServer
+from agent_scan.utils import resolve_command_and_args
 
 logger = logging.getLogger(__name__)
 

@@ -4,8 +4,8 @@ import sys
 
 import pytest
 
-from mcp_scan.models import CommandParsingError, rebalance_command_args
-from mcp_scan.utils import (
+from agent_scan.models import CommandParsingError, rebalance_command_args
+from agent_scan.utils import (
     calculate_distance,
     get_relative_path,
     suppress_stdout,

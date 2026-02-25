@@ -3,12 +3,12 @@ import os
 
 from pydantic import BaseModel
 
-from mcp_scan.inspect import (
+from agent_scan.inspect import (
     get_mcp_config_per_client,
     inspect_client,
     inspected_client_to_scan_path_result,
 )
-from mcp_scan.models import (
+from agent_scan.models import (
     CandidateClient,
     ClientToInspect,
     ControlServer,
@@ -17,11 +17,11 @@ from mcp_scan.models import (
     SkillServer,
     TokenAndClientInfo,
 )
-from mcp_scan.redact import redact_scan_result
-from mcp_scan.upload import upload
-from mcp_scan.utils import get_push_key
-from mcp_scan.verify_api import analyze_machine
-from mcp_scan.well_known_clients import get_well_known_clients
+from agent_scan.redact import redact_scan_result
+from agent_scan.upload import upload
+from agent_scan.utils import get_push_key
+from agent_scan.verify_api import analyze_machine
+from agent_scan.well_known_clients import get_well_known_clients
 
 logger = logging.getLogger(__name__)
 

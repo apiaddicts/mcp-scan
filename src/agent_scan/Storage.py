@@ -8,7 +8,7 @@ import yaml  # type: ignore
 from filelock import FileLock
 from pydantic import ValidationError
 
-from mcp_scan.models import Entity, ScannedEntities, ScannedEntity, entity_type_to_str, hash_entity
+from agent_scan.models import Entity, ScannedEntities, ScannedEntity, entity_type_to_str, hash_entity
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)

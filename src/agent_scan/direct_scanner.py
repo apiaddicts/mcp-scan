@@ -9,8 +9,8 @@ from typing import Any
 
 from mcp.types import Tool
 
-from mcp_scan.mcp_client import scan_mcp_config_file
-from mcp_scan.models import MCPConfig, StaticToolsConfig, StaticToolsServer
+from agent_scan.mcp_client import scan_mcp_config_file
+from agent_scan.models import MCPConfig, StaticToolsConfig, StaticToolsServer
 
 SUPPORTED_TYPES = ["streamable-https", "streamable-http", "sse", "pypi", "npm", "oci", "nuget", "mcpb", "tools"]
 

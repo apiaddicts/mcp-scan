@@ -15,15 +15,15 @@ import rich
 from mcp.server.fastmcp import FastMCP
 from rich.logging import RichHandler
 
-from mcp_scan.cli import run_scan_inspect
-from mcp_scan.mcp_client import scan_mcp_config_file
-from mcp_scan.models import StdioServer
-from mcp_scan.Storage import Storage
+from agent_scan.cli import run_scan_inspect
+from agent_scan.mcp_client import scan_mcp_config_file
+from agent_scan.models import StdioServer
+from agent_scan.Storage import Storage
 
 logger = logging.getLogger(__name__)
 
 
-# start a thread that runs the do_mcp_scan function
+# start a thread that runs the do_agent_scan function
 def thread_fn(path, args, stop_event):
     logger.info("Launching scanning thread")
     t = threading.current_thread()
@@ -195,9 +195,9 @@ def install_mcp_server(args):
         if idx >= 0:
             cmd = cmd[:idx] + cmd[idx + 1 :]
 
-        if "mcp-scan" in config.mcpServers:
+        if "agent-scan" in config.mcpServers:
             rich.print(f"MCP server already installed in {path}; Updating configuration")
-        config.mcpServers["mcp-scan"] = StdioServer(name="mcp-scan", command=cmd[0], args=cmd[1:])
+        config.mcpServers["agent-scan"] = StdioServer(name="agent-scan", command=cmd[0], args=cmd[1:])
         rich.print(f"Installed MCP server in {path}")
         with open(os.path.expanduser(path), "w") as f:
             f.write(config.model_dump_json(indent=4) + "\n")

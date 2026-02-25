@@ -11,9 +11,9 @@ from typing import Any
 from httpx import HTTPStatusError
 from pydantic import ValidationError
 
-from mcp_scan.direct_scanner import direct_scan, is_direct_scan
-from mcp_scan.mcp_client import check_server, scan_mcp_config_file
-from mcp_scan.models import (
+from agent_scan.direct_scanner import direct_scan, is_direct_scan
+from agent_scan.mcp_client import check_server, scan_mcp_config_file
+from agent_scan.models import (
     Issue,
     RemoteServer,
     ScanError,
@@ -23,13 +23,13 @@ from mcp_scan.models import (
     TokenAndClientInfoList,
     UnknownMCPConfig,
 )
-from mcp_scan.redact import redact_scan_result
-from mcp_scan.signed_binary import check_signed_binary
-from mcp_scan.Storage import Storage
-from mcp_scan.traffic_capture import TrafficCapture
-from mcp_scan.utils import get_push_key
-from mcp_scan.verify_api import analyze_machine
-from mcp_scan.well_known_clients import get_builtin_tools
+from agent_scan.redact import redact_scan_result
+from agent_scan.signed_binary import check_signed_binary
+from agent_scan.Storage import Storage
+from agent_scan.traffic_capture import TrafficCapture
+from agent_scan.utils import get_push_key
+from agent_scan.verify_api import analyze_machine
+from agent_scan.well_known_clients import get_builtin_tools
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)

@@ -10,7 +10,7 @@ from typing import Any
 
 from rapidfuzz.distance import Levenshtein
 
-from mcp_scan.models import ControlServer, StdioServer
+from agent_scan.models import ControlServer, StdioServer
 
 
 def ensure_unicode_console() -> None:

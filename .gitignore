@@ -45,7 +45,7 @@ ENV/
 .vscode/
 *.swp
 *.swo
-src/mcp_scan/todo.md
+src/agent_scan/todo.md
 
 *.env
 npm/package.json

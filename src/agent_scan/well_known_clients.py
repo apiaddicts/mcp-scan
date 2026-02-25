@@ -5,8 +5,8 @@ import sys
 
 from mcp.types import Implementation, InitializeResult, ServerCapabilities, Tool, ToolsCapability
 
-from mcp_scan.mcp_client import ServerSignature, StdioServer
-from mcp_scan.models import CandidateClient, ScanPathResult, ServerScanResult
+from agent_scan.mcp_client import ServerSignature, StdioServer
+from agent_scan.models import CandidateClient, ScanPathResult, ServerScanResult
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)

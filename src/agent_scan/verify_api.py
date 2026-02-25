@@ -9,22 +9,22 @@ import aiohttp
 import certifi
 import rich
 
-from mcp_scan.identity import IdentityManager
-from mcp_scan.models import (
+from agent_scan.identity import IdentityManager
+from agent_scan.models import (
     ScanError,
     ScanPathResult,
     ScanPathResultsCreate,
     ScanUserInfo,
 )
-from mcp_scan.well_known_clients import get_client_from_path
+from agent_scan.well_known_clients import get_client_from_path
 
 logger = logging.getLogger(__name__)
 identity_manager = IdentityManager()
 
 
 def get_hostname() -> str:
-    ci_hostname = os.getenv("MCP_SCAN_CI_HOSTNAME")
-    if os.getenv("MCP_SCAN_ENVIRONMENT") == "ci" and ci_hostname:
+    ci_hostname = os.getenv("AGENT_SCAN_CI_HOSTNAME")
+    if os.getenv("AGENT_SCAN_ENVIRONMENT") == "ci" and ci_hostname:
         return ci_hostname
     else:
         try:
@@ -192,7 +192,7 @@ async def analyze_machine(
     trace_configs = setup_aiohttp_debug_logging(verbose=verbose)
     headers = {
         "Content-Type": "application/json",
-        "X-Environment": os.getenv("MCP_SCAN_ENVIRONMENT", "production"),
+        "X-Environment": os.getenv("AGENT_SCAN_ENVIRONMENT", "production"),
     }
 
     if additional_headers:

@@ -16,8 +16,8 @@ from mcp.types import (
 )
 from pytest_lazy_fixtures import lf
 
-from mcp_scan.mcp_client import check_server, scan_mcp_config_file
-from mcp_scan.models import StdioServer, UnknownMCPConfig
+from agent_scan.mcp_client import check_server, scan_mcp_config_file
+from agent_scan.models import StdioServer, UnknownMCPConfig
 
 
 @pytest.mark.parametrize(
@@ -36,7 +36,7 @@ async def test_scan_mcp_config(sample_config_file):
 
 
 @pytest.mark.asyncio
-@patch("mcp_scan.mcp_client.stdio_client")
+@patch("agent_scan.mcp_client.stdio_client")
 async def test_check_server_mocked(mock_stdio_client):
     # Create mock objects
     mock_session = Mock()
@@ -96,7 +96,7 @@ async def test_check_server_mocked(mock_stdio_client):
             pass
 
     # Test function with mocks
-    with patch("mcp_scan.mcp_client.ClientSession", MockClientSession):
+    with patch("agent_scan.mcp_client.ClientSession", MockClientSession):
         server = StdioServer(command="mcp", args=["run", "some_file.py"])
         signature, _ = await check_server(server, 2, True)
 

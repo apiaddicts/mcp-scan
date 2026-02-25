@@ -1,4 +1,4 @@
-"""Global pytest fixtures for mcp-scan tests."""
+"""Global pytest fixtures for agent-scan tests."""
 
 import subprocess
 import sys
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from mcp_scan.utils import TempFile, ensure_unicode_console
+from agent_scan.utils import TempFile, ensure_unicode_console
 
 # Repository root (parent of tests/)
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -30,7 +30,7 @@ def _build_binary() -> None:
         (["uv", "sync"], "uv sync"),
         (["uv", "pip", "install", "-e", ".[dev]"], "uv pip install -e .[dev]"),
         (
-            ["uv", "run", "pyinstaller", "--onefile", "--name", "mcp-scan", "src/mcp_scan/run.py"],
+            ["uv", "run", "pyinstaller", "--onefile", "--name", "mcp-scan", "src/agent_scan/run.py"],
             "pyinstaller",
         ),
     ]
@@ -42,12 +42,12 @@ def _build_binary() -> None:
 
 def _skip_binary(reason: str) -> None:
     """Skip binary tests and log reason (visible with pytest -s on Windows)."""
-    print(f"[mcp_scan_binary] {reason}", flush=True)
+    print(f"[agent_scan_binary] {reason}", flush=True)
     pytest.skip(reason)
 
 
 @pytest.fixture(scope="session")
-def mcp_scan_binary():
+def agent_scan_binary():
     """Build the CLI binary and return its path. Uses `make binary` on Unix; builds directly on Windows. Skips if build fails."""
     binary_path = _get_binary_path()
     if binary_path.is_file():
@@ -72,14 +72,14 @@ def mcp_scan_binary():
 
 
 @pytest.fixture
-def mcp_scan_cmd(request):
-    """CLI invocation: either 'uv run -m src.mcp_scan.run' or the built binary. Use with @pytest.mark.parametrize('mcp_scan_cmd', ['uv', 'binary'], indirect=True). Build runs only when 'binary' is requested."""
+def agent_scan_cmd(request):
+    """CLI invocation: either 'uv run -m src.agent_scan.run' or the built binary. Use with @pytest.mark.parametrize('agent_scan_cmd', ['uv', 'binary'], indirect=True). Build runs only when 'binary' is requested."""
     if request.param == "uv":
-        return ["uv", "run", "-m", "src.mcp_scan.run"]
+        return ["uv", "run", "-m", "src.agent_scan.run"]
     if request.param == "binary":
-        binary = request.getfixturevalue("mcp_scan_binary")
+        binary = request.getfixturevalue("agent_scan_binary")
         return [binary]
-    raise ValueError(f"Unknown mcp_scan_cmd param: {request.param}")
+    raise ValueError(f"Unknown agent_scan_cmd param: {request.param}")
 
 
 @pytest.fixture

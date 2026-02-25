@@ -6,8 +6,8 @@ import aiohttp
 import httpx
 import pytest
 
-from mcp_scan.MCPScanner import MCPScanner
-from mcp_scan.models import (
+from agent_scan.MCPScanner import MCPScanner
+from agent_scan.models import (
     ScanError,
     ScanPathResult,
     ScanUserInfo,
@@ -15,7 +15,7 @@ from mcp_scan.models import (
     StdioServer,
     UnknownMCPConfig,
 )
-from mcp_scan.upload import (
+from agent_scan.upload import (
     get_user_info,
     upload,  # Make sure this import is correct
 )
@@ -88,7 +88,7 @@ async def test_upload_function_calls_get_user_info_with_correct_parameters():
     mock_result = ScanPathResult(path="/test/path")
 
     # Mock the get_user_info function
-    with patch("mcp_scan.upload.get_user_info") as mock_get_user_info:
+    with patch("agent_scan.upload.get_user_info") as mock_get_user_info:
         mock_get_user_info.return_value = ScanUserInfo()
 
         # 1. Create a mock for the HTTP response object.
@@ -101,7 +101,7 @@ async def test_upload_function_calls_get_user_info_with_correct_parameters():
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
         # 3. Patch the `aiohttp.ClientSession.post` method directly on the class
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             #    Configure the mocked `post` method to return our mock context manager
             mock_post_method.return_value = mock_post_context_manager
 
@@ -121,7 +121,7 @@ async def test_upload_function_calls_get_user_info_with_opt_out_false():
     mock_result = ScanPathResult(path="/test/path")
 
     # Mock the get_user_info function
-    with patch("mcp_scan.upload.get_user_info") as mock_get_user_info:
+    with patch("agent_scan.upload.get_user_info") as mock_get_user_info:
         mock_get_user_info.return_value = ScanUserInfo()
 
         # 1. Create a mock for the HTTP response object.
@@ -134,7 +134,7 @@ async def test_upload_function_calls_get_user_info_with_opt_out_false():
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
         # 3. Patch the `aiohttp.ClientSession.post` method directly on the class
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             #    Configure the mocked `post` method to return our mock context manager
             mock_post_method.return_value = mock_post_context_manager
 
@@ -169,7 +169,7 @@ async def test_upload_includes_scan_error_in_payload():
         ),
     )
 
-    with patch("mcp_scan.upload.get_user_info") as mock_get_user_info:
+    with patch("agent_scan.upload.get_user_info") as mock_get_user_info:
         mock_get_user_info.return_value = ScanUserInfo()
 
         # Mock HTTP response
@@ -182,7 +182,7 @@ async def test_upload_includes_scan_error_in_payload():
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
         # Patch aiohttp ClientSession.post
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             # Execute upload
@@ -215,9 +215,9 @@ async def test_get_servers_from_path_sets_file_not_found_error_and_uploads_paylo
     """
     with (
         patch.object(
-            sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", side_effect=FileNotFoundError("missing")
+            sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", side_effect=FileNotFoundError("missing")
         ),
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
 
@@ -228,7 +228,7 @@ async def test_get_servers_from_path_sets_file_not_found_error_and_uploads_paylo
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             async with MCPScanner(files=["/nonexistent/path"]) as scanner:
@@ -253,9 +253,9 @@ async def test_get_servers_from_path_sets_parse_error_and_uploads_payload():
     """
     with (
         patch.object(
-            sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", side_effect=Exception("parse failure")
+            sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", side_effect=Exception("parse failure")
         ),
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
 
@@ -266,7 +266,7 @@ async def test_get_servers_from_path_sets_parse_error_and_uploads_payload():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             async with MCPScanner(files=["/bad/config"]) as scanner:
@@ -295,13 +295,13 @@ async def test_scan_server_sets_http_status_error_and_uploads_payload():
             return {"srv": StdioServer(command="echo")}
 
     with (
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
         patch.object(
-            sys.modules["mcp_scan.MCPScanner"],
+            sys.modules["agent_scan.MCPScanner"],
             "check_server",
             side_effect=httpx.HTTPStatusError("bad", request=None, response=None),
         ),
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
 
@@ -312,7 +312,7 @@ async def test_scan_server_sets_http_status_error_and_uploads_payload():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             async with MCPScanner(files=["/ok/path"]) as scanner:
@@ -340,9 +340,9 @@ async def test_scan_server_sets_could_not_start_error_and_uploads_payload():
             return {"srv": StdioServer(command="echo")}
 
     with (
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "check_server", side_effect=Exception("spawn failed")),
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
+        patch.object(sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "check_server", side_effect=Exception("spawn failed")),
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
 
@@ -353,7 +353,7 @@ async def test_scan_server_sets_could_not_start_error_and_uploads_payload():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             async with MCPScanner(files=["/ok/path"]) as scanner:
@@ -376,8 +376,8 @@ async def test_upload_retries_on_network_error():
     mock_result = ScanPathResult(path="/test/path")
 
     with (
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
-        patch("mcp_scan.upload.asyncio.sleep") as mock_sleep,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.asyncio.sleep") as mock_sleep,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
         mock_sleep.return_value = None  # Speed up tests by not actually sleeping
@@ -386,7 +386,7 @@ async def test_upload_retries_on_network_error():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.side_effect = aiohttp.ClientError("Connection refused")
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             # Execute upload
@@ -410,8 +410,8 @@ async def test_upload_retries_on_server_error():
     mock_result = ScanPathResult(path="/test/path")
 
     with (
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
-        patch("mcp_scan.upload.asyncio.sleep") as mock_sleep,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.asyncio.sleep") as mock_sleep,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
         mock_sleep.return_value = None
@@ -424,7 +424,7 @@ async def test_upload_retries_on_server_error():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             # Execute upload
@@ -445,8 +445,8 @@ async def test_upload_does_not_retry_on_client_error():
     mock_result = ScanPathResult(path="/test/path")
 
     with (
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
-        patch("mcp_scan.upload.asyncio.sleep") as mock_sleep,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.asyncio.sleep") as mock_sleep,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
         mock_sleep.return_value = None
@@ -459,7 +459,7 @@ async def test_upload_does_not_retry_on_client_error():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             # Execute upload
@@ -480,8 +480,8 @@ async def test_upload_succeeds_on_second_attempt():
     mock_result = ScanPathResult(path="/test/path")
 
     with (
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
-        patch("mcp_scan.upload.asyncio.sleep") as mock_sleep,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.asyncio.sleep") as mock_sleep,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
         mock_sleep.return_value = None
@@ -495,7 +495,7 @@ async def test_upload_succeeds_on_second_attempt():
         mock_success_context = AsyncMock()
         mock_success_context.__aenter__.return_value = mock_success_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             # First call fails, second succeeds
             mock_post_method.side_effect = [mock_error_context, mock_success_context]
 
@@ -518,8 +518,8 @@ async def test_upload_custom_max_retries():
     mock_result = ScanPathResult(path="/test/path")
 
     with (
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
-        patch("mcp_scan.upload.asyncio.sleep") as mock_sleep,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.asyncio.sleep") as mock_sleep,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
         mock_sleep.return_value = None
@@ -528,7 +528,7 @@ async def test_upload_custom_max_retries():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.side_effect = aiohttp.ClientError("Connection refused")
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             # Execute upload with custom max_retries=5
@@ -549,8 +549,8 @@ async def test_upload_exponential_backoff():
     mock_result = ScanPathResult(path="/test/path")
 
     with (
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
-        patch("mcp_scan.upload.asyncio.sleep") as mock_sleep,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.asyncio.sleep") as mock_sleep,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
         mock_sleep.return_value = None
@@ -559,7 +559,7 @@ async def test_upload_exponential_backoff():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.side_effect = aiohttp.ClientError("Connection refused")
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             # Execute upload
@@ -579,8 +579,8 @@ async def test_upload_does_not_retry_on_unexpected_error():
     mock_result = ScanPathResult(path="/test/path")
 
     with (
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
-        patch("mcp_scan.upload.asyncio.sleep") as mock_sleep,
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
+        patch("agent_scan.upload.asyncio.sleep") as mock_sleep,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
         mock_sleep.return_value = None
@@ -589,7 +589,7 @@ async def test_upload_does_not_retry_on_unexpected_error():
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.side_effect = ValueError("Unexpected error")
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             # Execute upload and expect ValueError to be raised
@@ -610,8 +610,8 @@ async def test_get_servers_from_path_sets_unknown_mcp_config_error_and_uploads_p
     and ensure the resulting ScanPathResult has a non-failing error and is uploaded with empty servers list.
     """
     with (
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", return_value=UnknownMCPConfig()),
-        patch("mcp_scan.upload.get_user_info") as mock_get_user_info,
+        patch.object(sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", return_value=UnknownMCPConfig()),
+        patch("agent_scan.upload.get_user_info") as mock_get_user_info,
     ):
         mock_get_user_info.return_value = ScanUserInfo()
 
@@ -623,7 +623,7 @@ async def test_get_servers_from_path_sets_unknown_mcp_config_error_and_uploads_p
         mock_post_context_manager = AsyncMock()
         mock_post_context_manager.__aenter__.return_value = mock_http_response
 
-        with patch("mcp_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
+        with patch("agent_scan.upload.aiohttp.ClientSession.post") as mock_post_method:
             mock_post_method.return_value = mock_post_context_manager
 
             async with MCPScanner(files=["/unknown.cfg"]) as scanner:

@@ -7,9 +7,9 @@ from urllib.parse import parse_qsl, urlsplit
 
 import pytest
 
-from mcp_scan.MCPScanner import MCPScanner
-from mcp_scan.models import RemoteServer, ScanPathResult, StdioServer
-from mcp_scan.redact import redact_absolute_paths, redact_args, redact_scan_result
+from agent_scan.MCPScanner import MCPScanner
+from agent_scan.models import RemoteServer, ScanPathResult, StdioServer
+from agent_scan.redact import redact_absolute_paths, redact_args, redact_scan_result
 from tests.conftest import TempFile
 
 
@@ -144,8 +144,8 @@ async def test_scan_path_redacts_remote_url_query_and_headers():
             }
 
     with (
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "check_server", return_value=None),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "check_server", return_value=None),
     ):
         async with MCPScanner(files=["/dummy/path"]) as scanner:
             result = await scanner.scan_path("/dummy/path", inspect_only=True)
@@ -183,8 +183,8 @@ async def test_scan_path_redacts_stdio_env_vars():
             }
 
     with (
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "check_server", return_value=None),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "check_server", return_value=None),
     ):
         async with MCPScanner(files=["/dummy/path"]) as scanner:
             result = await scanner.scan_path("/dummy/path", inspect_only=True)
@@ -218,8 +218,8 @@ async def test_scan_path_redacts_stdio_args():
             }
 
     with (
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
-        patch.object(sys.modules["mcp_scan.MCPScanner"], "check_server", return_value=None),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "scan_mcp_config_file", return_value=DummyCfg()),
+        patch.object(sys.modules["agent_scan.MCPScanner"], "check_server", return_value=None),
     ):
         async with MCPScanner(files=["/dummy/path"]) as scanner:
             result = await scanner.scan_path("/dummy/path", inspect_only=True)
@@ -274,6 +274,6 @@ async def test_analysis_machine_get_redacted_payload(configs):
     with TempFile(mode="w") as temp_file:
         temp_file.write(json.dumps(configs))
         temp_file.flush()
-        with patch("mcp_scan.MCPScanner.analyze_machine", side_effect=check_redacted_payload):
+        with patch("agent_scan.MCPScanner.analyze_machine", side_effect=check_redacted_payload):
             async with MCPScanner(files=[temp_file.name]) as scanner:
                 _ = await scanner.scan()

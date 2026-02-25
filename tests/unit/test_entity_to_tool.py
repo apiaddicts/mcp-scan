@@ -1,6 +1,6 @@
 import pytest
 
-from mcp_scan.models import ServerSignature, entity_to_tool
+from agent_scan.models import ServerSignature, entity_to_tool
 
 
 @pytest.mark.parametrize(

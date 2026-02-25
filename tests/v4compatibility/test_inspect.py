@@ -5,10 +5,10 @@ from unittest.mock import patch
 
 import pytest
 
-from mcp_scan.models import CandidateClient, ScanError, ScanPathResult, ServerScanResult, SkillServer
-from mcp_scan.pipelines import InspectArgs, inspect_pipeline
-from mcp_scan.signed_binary import check_signed_binary
-from mcp_scan.skill_client import inspect_skill, inspect_skills_dir
+from agent_scan.models import CandidateClient, ScanError, ScanPathResult, ServerScanResult, SkillServer
+from agent_scan.pipelines import InspectArgs, inspect_pipeline
+from agent_scan.signed_binary import check_signed_binary
+from agent_scan.skill_client import inspect_skill, inspect_skills_dir
 
 TEST_CANDIDATE_CLIENTS = [
     CandidateClient(
@@ -112,10 +112,10 @@ def compare_scan_path_results(
 
 
 @pytest.mark.asyncio
-@patch("mcp_scan.pipelines.get_well_known_clients", return_value=TEST_CANDIDATE_CLIENTS)
+@patch("agent_scan.pipelines.get_well_known_clients", return_value=TEST_CANDIDATE_CLIENTS)
 async def test_inspect_clients(mock_get_well_known_clients):
     result_test_client_stdout = subprocess.run(
-        ["uv", "run", "-m", "src.mcp_scan.run", "inspect", "--json", "tests/mcp_servers/.test-client/mcp.json"],
+        ["uv", "run", "-m", "src.agent_scan.run", "inspect", "--json", "tests/mcp_servers/.test-client/mcp.json"],
         capture_output=True,
         text=True,
     )
@@ -125,7 +125,15 @@ async def test_inspect_clients(mock_get_well_known_clients):
     )
     result_test_client = (await check_signed_binary([result_test_client]))[0]
     result_test_client_invalid_stdout = subprocess.run(
-        ["uv", "run", "-m", "src.mcp_scan.run", "inspect", "--json", "tests/mcp_servers/.test-client-invalid/mcp.json"],
+        [
+            "uv",
+            "run",
+            "-m",
+            "src.agent_scan.run",
+            "inspect",
+            "--json",
+            "tests/mcp_servers/.test-client-invalid/mcp.json",
+        ],
         capture_output=True,
         text=True,
     )

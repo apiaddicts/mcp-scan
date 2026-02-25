@@ -1,7 +1,7 @@
 import os
 from tempfile import TemporaryDirectory
 
-from mcp_scan.Storage import Storage
+from agent_scan.Storage import Storage
 
 
 def test_whitelist():

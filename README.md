@@ -323,7 +323,7 @@ To run this package from source, follow these steps:
 
 ```bash
 uv run pip install -e .
-uv run -m src.mcp_scan.cli
+uv run -m src.agent_scan.cli
 ```
 
 For proxy functionality (e.g., `mcp-scan proxy`, `mcp-scan server`), install with the proxy extra:

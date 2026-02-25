@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mcp_scan.models import ScanPathResult
-from mcp_scan.verify_api import analyze_machine, setup_tcp_connector
+from agent_scan.models import ScanPathResult
+from agent_scan.verify_api import analyze_machine, setup_tcp_connector
 
 
 class TestProxySupport:
@@ -20,7 +20,7 @@ class TestProxySupport:
         analysis_url = "https://test.example.com/api"
 
         # Mock the aiohttp.ClientSession to capture how it was called
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
             mock_response = AsyncMock()
             mock_response.status = 200
@@ -62,7 +62,7 @@ class TestProxySupport:
         scan_paths = [ScanPathResult(path="/test/path")]
         analysis_url = "https://test.example.com/api"
 
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
             mock_response = AsyncMock()
             mock_response.status = 200
@@ -103,7 +103,7 @@ class TestProxySupport:
         scan_paths = [ScanPathResult(path="/test/path")]
         analysis_url = "https://test.example.com/api"
 
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
             mock_response = AsyncMock()
             mock_response.status = 200
@@ -147,7 +147,7 @@ class TestProxySupport:
         scan_paths = [ScanPathResult(path="/test/path")]
         analysis_url = "https://test.example.com/api"
 
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
             mock_response = AsyncMock()
             mock_response.status = 200
@@ -185,7 +185,7 @@ class TestProxySupport:
 
     def test_setup_tcp_connector_with_ssl_verify(self):
         """Test that setup_tcp_connector creates proper SSL context."""
-        with patch("mcp_scan.verify_api.aiohttp.TCPConnector") as mock_connector:
+        with patch("agent_scan.verify_api.aiohttp.TCPConnector") as mock_connector:
             mock_instance = MagicMock()
             mock_connector.return_value = mock_instance
 
@@ -200,7 +200,7 @@ class TestProxySupport:
 
     def test_setup_tcp_connector_without_ssl_verify(self):
         """Test that setup_tcp_connector disables SSL when requested."""
-        with patch("mcp_scan.verify_api.aiohttp.TCPConnector") as mock_connector:
+        with patch("agent_scan.verify_api.aiohttp.TCPConnector") as mock_connector:
             mock_instance = MagicMock()
             mock_connector.return_value = mock_instance
 
@@ -222,7 +222,7 @@ class TestAnalyzeMachineRetries:
         scan_paths = [ScanPathResult(path="/test/path")]
         analysis_url = "https://test.example.com/api"
 
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
 
             # First two attempts timeout, third succeeds
@@ -258,7 +258,7 @@ class TestAnalyzeMachineRetries:
 
             mock_session_class.return_value = mock_session
 
-            with patch("mcp_scan.verify_api.asyncio.sleep", new_callable=AsyncMock):
+            with patch("agent_scan.verify_api.asyncio.sleep", new_callable=AsyncMock):
                 result = await analyze_machine(
                     scan_paths=scan_paths,
                     analysis_url=analysis_url,
@@ -283,7 +283,7 @@ class TestAnalyzeMachineHeaders:
         analysis_url = "https://test.example.com/api"
         additional_headers = {"X-Custom-Header": "custom-value", "Authorization": "Bearer token123"}
 
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
             mock_response = AsyncMock()
             mock_response.status = 200
@@ -334,7 +334,7 @@ class TestAnalyzeMachineScanMetadata:
         analysis_url = "https://test.example.com/api"
         scan_context = {"cli_version": "1.2.3", "source": "pipeline"}
 
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
             mock_response = AsyncMock()
             mock_response.status = 200
@@ -372,7 +372,7 @@ class TestAnalyzeMachineScanMetadata:
         scan_paths = [ScanPathResult(path="/test/path")]
         analysis_url = "https://test.example.com/api"
 
-        with patch("mcp_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
+        with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
             mock_response = AsyncMock()
             mock_response.status = 200

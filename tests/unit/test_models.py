@@ -1,6 +1,6 @@
 import pytest
 
-from mcp_scan.models import CommandParsingError, StdioServer
+from agent_scan.models import CommandParsingError, StdioServer
 
 
 class TestStdioServerRebalance:
@@ -30,10 +30,10 @@ class TestStdioServerRebalance:
             ),
             # UVX-based MCP servers
             (
-                "uvx mcp-scan@latest --json",
+                "uvx agent-scan@latest --json",
                 ["--control-server=something"],
                 "uvx",
-                ["mcp-scan@latest", "--json", "--control-server=something"],
+                ["agent-scan@latest", "--json", "--control-server=something"],
             ),
             (
                 "uvx mcp-server-fetch",

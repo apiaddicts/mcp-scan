@@ -14,7 +14,7 @@ from mcp.types import (
     ToolsCapability,
 )
 
-from mcp_scan.models import ServerSignature, SkillServer
+from agent_scan.models import ServerSignature, SkillServer
 
 logger = logging.getLogger(__name__)
 

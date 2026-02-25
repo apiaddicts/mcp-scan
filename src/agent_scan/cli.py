@@ -18,16 +18,16 @@ import psutil
 import rich
 from rich.logging import RichHandler
 
-from mcp_scan.MCPScanner import MCPScanner
-from mcp_scan.models import ControlServer, TokenAndClientInfo, TokenAndClientInfoList
-from mcp_scan.pipelines import AnalyzeArgs, InspectArgs, PushArgs, inspect_analyze_push_pipeline, inspect_pipeline
-from mcp_scan.printer import print_scan_result
-from mcp_scan.Storage import Storage
-from mcp_scan.upload import get_hostname, upload
-from mcp_scan.utils import ensure_unicode_console, parse_headers, suppress_stdout
-from mcp_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
-from mcp_scan.version import version_info
-from mcp_scan.well_known_clients import WELL_KNOWN_MCP_PATHS, client_shorthands_to_paths
+from agent_scan.MCPScanner import MCPScanner
+from agent_scan.models import ControlServer, TokenAndClientInfo, TokenAndClientInfoList
+from agent_scan.pipelines import AnalyzeArgs, InspectArgs, PushArgs, inspect_analyze_push_pipeline, inspect_pipeline
+from agent_scan.printer import print_scan_result
+from agent_scan.Storage import Storage
+from agent_scan.upload import get_hostname, upload
+from agent_scan.utils import ensure_unicode_console, parse_headers, suppress_stdout
+from agent_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
+from agent_scan.version import version_info
+from agent_scan.well_known_clients import WELL_KNOWN_MCP_PATHS, client_shorthands_to_paths
 
 # Configure logging to suppress all output by default
 logging.getLogger().setLevel(logging.CRITICAL + 1)  # Higher than any standard level
@@ -79,7 +79,7 @@ def get_invoking_name():
                 break
         cmd = " ".join(cmd)
     except Exception:
-        cmd = "mcp-scan"
+        cmd = "agent-scan"
     return cmd
 
 
@@ -289,7 +289,7 @@ def main():
     program_name = get_invoking_name()
     parser = argparse.ArgumentParser(
         prog=program_name,
-        description="MCP-scan: Security scanner for Model Context Protocol servers and tools",
+        description="Snyk Agent Scan: Security scanner for Model Context Protocol servers and tools",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
@@ -464,7 +464,7 @@ def main():
 
     # Display version banner
     if not ((hasattr(args, "json") and args.json) or (args.command == "mcp-server")):
-        rich.print(f"[bold blue]Invariant MCP-scan v{version_info}[/bold blue]\n")
+        rich.print(f"[bold blue]Snyk Agent Scan v{version_info}[/bold blue]\n")
 
     # Set up logging if verbose flag is enabled
     do_log = hasattr(args, "verbose") and args.verbose
@@ -498,11 +498,11 @@ def main():
         asyncio.run(print_scan_inspect(args=args))
         sys.exit(0)
     elif args.command == "mcp-server":
-        from mcp_scan.mcp_server import mcp_server
+        from agent_scan.mcp_server import mcp_server
 
         sys.exit(mcp_server(args))
     elif args.command == "install-mcp-server":
-        from mcp_scan.mcp_server import install_mcp_server
+        from agent_scan.mcp_server import install_mcp_server
 
         sys.exit(install_mcp_server(args))
     elif args.command == "evo":
