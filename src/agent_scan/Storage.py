@@ -4,7 +4,6 @@ import os
 from datetime import datetime
 
 import rich
-import yaml  # type: ignore
 from filelock import FileLock
 from pydantic import ValidationError
 
