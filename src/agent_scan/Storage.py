@@ -20,7 +20,6 @@ class Storage:
 
         logger.debug("Expanded path: %s", self.path)
         self.scanned_entities: ScannedEntities = ScannedEntities({})
-        self.whitelist: dict[str, str] = {}
 
         self.detect_and_convert_legacy_storage()
         self.init_from_path()
@@ -35,7 +34,6 @@ class Storage:
             with open(self.path) as f:
                 legacy_data = json.load(f)
             if "__whitelist" in legacy_data:
-                self.whitelist = legacy_data["__whitelist"]
                 del legacy_data["__whitelist"]
 
             try:
@@ -43,8 +41,6 @@ class Storage:
                 with open(self.path) as f:
                     legacy_data = json.load(f)
                 if "__whitelist" in legacy_data:
-                    logger.debug("Found whitelist in legacy data with %d entries", len(legacy_data["__whitelist"]))
-                    self.whitelist = legacy_data["__whitelist"]
                     del legacy_data["__whitelist"]
                 try:
                     self.scanned_entities = ScannedEntities.model_validate(legacy_data)
@@ -73,17 +69,6 @@ class Storage:
                         error_msg = f"Could not load scanned entities file {scanned_entities_path}: {e}"
                         logger.error(error_msg)
                         rich.print(f"[bold red]{error_msg}[/bold red]")
-            whitelist_path = os.path.join(self.path, "whitelist.json")
-            if os.path.exists(whitelist_path):
-                logger.debug("Loading whitelist from: %s", whitelist_path)
-                with open(whitelist_path) as f:
-                    self.whitelist = json.load(f)
-                    logger.info("Successfully loaded whitelist with %d entries", len(self.whitelist))
-
-    def reset_whitelist(self) -> None:
-        logger.info("Resetting whitelist")
-        self.whitelist = {}
-        self.save()
 
     def check_and_update(self, server_name: str, entity: Entity) -> tuple[bool, list[str]]:
         logger.debug("Checking entity: %s in server: %s", entity.name, server_name)
@@ -130,30 +115,6 @@ class Storage:
                 f.write("")
         return file
 
-    def print_whitelist(self) -> None:
-        logger.info("Printing whitelist with %d entries", len(self.whitelist))
-        whitelist_keys = sorted(self.whitelist.keys())
-        for key in whitelist_keys:
-            if "." in key:
-                entity_type, name = key.split(".", 1)
-            else:
-                entity_type, name = "tool", key
-            logger.debug("Whitelist entry: %s - %s - %s", entity_type, name, self.whitelist[key])
-            rich.print(entity_type, name, self.whitelist[key])
-        rich.print(f"[bold]{len(whitelist_keys)} entries in whitelist[/bold]")
-
-    def add_to_whitelist(self, entity_type: str, name: str, hash: str) -> None:
-        key = f"{entity_type}.{name}"
-        logger.info("Adding to whitelist: %s with hash: %s", key, hash)
-        self.whitelist[key] = hash
-        self.save()
-
-    def is_whitelisted(self, entity: Entity) -> bool:
-        hash = hash_entity(entity)
-        result = hash in self.whitelist.values()
-        logger.debug("Checking if entity %s is whitelisted: %s", entity.name, result)
-        return result
-
     def save(self) -> None:
         logger.info("Saving storage data to %s", self.path)
         with self._lock:
@@ -163,11 +124,6 @@ class Storage:
                 logger.debug("Saving scanned entities to: %s", scanned_entities_path)
                 with open(scanned_entities_path, "w") as f:
                     f.write(self.scanned_entities.model_dump_json())
-
-                whitelist_path = os.path.join(self.path, "whitelist.json")
-                logger.debug("Saving whitelist to: %s", whitelist_path)
-                with open(whitelist_path, "w") as f:
-                    json.dump(self.whitelist, f)
                 logger.info("Successfully saved storage files")
             except Exception as e:
                 logger.exception("Error saving storage files: %s", e)

@@ -217,21 +217,6 @@ class MCPScanner:
                     )
         return issues
 
-    def check_whitelist(self, path_result: ScanPathResult) -> list[Issue]:
-        logger.debug("Checking whitelist for path: %s", path_result.path)
-        issues: list[Issue] = []
-        if path_result.servers is None:
-            return issues
-        for server_idx, server in enumerate(path_result.servers):
-            for entity_idx, entity in enumerate(server.entities):
-                if self.storage_file.is_whitelisted(entity):
-                    issues.append(
-                        Issue(
-                            code="X002", message="This entity has been whitelisted", reference=(server_idx, entity_idx)
-                        )
-                    )
-        return issues
-
     async def emit(self, signal: str, data: Any):
         logger.debug("Emitting signal: %s", signal)
         if self.context_manager is not None:
@@ -310,8 +295,6 @@ class MCPScanner:
         return path_result
 
     async def check_path(self, path_result: ScanPathResult) -> ScanPathResult:
-        logger.debug(f"Check whitelisted {path_result.path}, {path_result.path is None}")
-        path_result.issues += self.check_whitelist(path_result)
         logger.debug(f"Check changed: {path_result.path}, {path_result.path is None}")
         path_result.issues += self.check_server_changed(path_result)
         await self.emit("path_scanned", path_result)

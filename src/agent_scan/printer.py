@@ -12,8 +12,6 @@ from agent_scan.models import (
     ScanError,
     ScanPathResult,
     ToxicFlowExtraData,
-    entity_type_to_str,
-    hash_entity,
 )
 
 MAX_ENTITY_NAME_LENGTH = 25
@@ -25,7 +23,6 @@ ISSUE_COLOR_MAP = {
     "issue": "[red]",
     "analysis_error": "[gray62]",
     "warning": "[yellow]",
-    "whitelisted": "[blue]",
     "inspect_mode": "[white]",
 }
 
@@ -134,9 +131,7 @@ def format_entity_line(
     # is_verified = verified.value
     # if is_verified is not None and changed.value is not None:
     #     is_verified = is_verified and not changed.value
-    if any(issue.code.startswith("X002") for issue in issues):
-        status = "whitelisted"
-    elif any(issue.code.startswith("X") for issue in issues):
+    if any(issue.code.startswith("X") for issue in issues):
         status = "analysis_error"
     elif any(issue.code.startswith("E") for issue in issues):
         status = "issue"
@@ -150,7 +145,6 @@ def format_entity_line(
         "issue": ":cross_mark:",
         "analysis_error": "",
         "warning": "⚠️ ",
-        "whitelisted": ":white_heavy_check_mark:",
         "inspect_mode": "  ",
     }
     color = ISSUE_COLOR_MAP[status]
@@ -158,7 +152,7 @@ def format_entity_line(
     if inspect_mode or are_there_server_issues:
         color = ISSUE_COLOR_MAP["inspect_mode"]
         icon = icon_map["inspect_mode"]
-    include_description = status not in ["whitelisted", "analysis_error", "successful"] or are_there_server_issues
+    include_description = status not in ["analysis_error", "successful"] or are_there_server_issues
 
     # right-pad & truncate name
     name = entity.name
@@ -199,18 +193,6 @@ def format_entity_line(
         description = description.replace("[", r"\[").replace("]", r"\]")
         text += f"\n[gray62][bold]Current description:[/bold]\n{description}[/gray62]"
 
-    messages = []
-    if status not in ["successful", "analysis_error", "whitelisted"]:
-        hash = hash_entity(entity)
-        messages.append(
-            f"[bold]You can whitelist this {entity_type_to_str(entity)} "
-            f"by running `agent-scan whitelist {entity_type_to_str(entity)} "
-            f"'{entity.name}' {hash}`[/bold]"
-        )
-
-    if len(messages) > 0:
-        message = "\n".join(messages)
-        text += f"\n\n[gray62]{message}[/gray62]"
     formatted_text = Text.from_markup(text)
     return formatted_text
 

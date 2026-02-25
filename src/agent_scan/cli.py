@@ -22,7 +22,6 @@ from agent_scan.MCPScanner import MCPScanner
 from agent_scan.models import ControlServer, TokenAndClientInfo, TokenAndClientInfoList
 from agent_scan.pipelines import AnalyzeArgs, InspectArgs, PushArgs, inspect_analyze_push_pipeline, inspect_pipeline
 from agent_scan.printer import print_scan_result
-from agent_scan.Storage import Storage
 from agent_scan.upload import get_hostname, upload
 from agent_scan.utils import ensure_unicode_console, parse_headers, suppress_stdout
 from agent_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
@@ -149,7 +148,7 @@ def add_common_arguments(parser):
         "--storage-file",
         type=str,
         default="~/.mcp-scan",
-        help="Path to store scan results and whitelist information",
+        help="Path to store scan results and scanner state",
         metavar="FILE",
     )
     parser.add_argument(
@@ -296,8 +295,6 @@ def main():
             f"  {program_name}                     # Scan all known MCP configs\n"
             f"  {program_name} ~/custom/config.json # Scan a specific config file\n"
             f"  {program_name} inspect             # Just inspect tools without verification\n"
-            f"  {program_name} whitelist           # View whitelisted tools\n"
-            f'  {program_name} whitelist tool "add" "a1b2c3..." # Whitelist the \'add\' tool\n'
             f"  {program_name} --skills            # Scan skills beyond mcp servers.\n"
             f"  {program_name} --verbose           # Enable detailed logging output\n"
             f"  {program_name} --print-errors      # Show error details and tracebacks\n"
@@ -345,55 +342,6 @@ def main():
         metavar="CONFIG_FILE",
     )
 
-    # WHITELIST command
-    whitelist_parser = subparsers.add_parser(
-        "whitelist",
-        help="Manage the whitelist of approved entities",
-        description=(
-            "View, add, or reset whitelisted entities. Whitelisted entities bypass security checks during scans."
-        ),
-    )
-    add_common_arguments(whitelist_parser)
-
-    whitelist_group = whitelist_parser.add_argument_group("Whitelist Options")
-    whitelist_group.add_argument(
-        "--reset",
-        default=False,
-        action="store_true",
-        help="Reset the entire whitelist",
-    )
-    whitelist_group.add_argument(
-        "--local-only",
-        default=False,
-        action="store_true",
-        help="Only update local whitelist, don't contribute to global whitelist",
-    )
-
-    whitelist_parser.add_argument(
-        "type",
-        type=str,
-        choices=["tool", "prompt", "resource"],
-        default="tool",
-        nargs="?",
-        help="Type of entity to whitelist (default: tool)",
-        metavar="TYPE",
-    )
-    whitelist_parser.add_argument(
-        "name",
-        type=str,
-        default=None,
-        nargs="?",
-        help="Name of the entity to whitelist",
-        metavar="NAME",
-    )
-    whitelist_parser.add_argument(
-        "hash",
-        type=str,
-        default=None,
-        nargs="?",
-        help="Hash of the entity to whitelist",
-        metavar="HASH",
-    )
     # install
     install_autoscan_parser = subparsers.add_parser(
         "install-mcp-server", help="Install itself as a MCP server for automatic scanning (experimental)"
@@ -474,23 +422,6 @@ def main():
     if args.command == "help" or (args.command is None and hasattr(args, "help") and args.help):
         parser.print_help()
         sys.exit(0)
-    elif args.command == "whitelist":
-        sf = Storage(args.storage_file)
-        if args.reset:
-            sf.reset_whitelist()
-            rich.print("[bold]Whitelist reset[/bold]")
-            sys.exit(0)
-        elif all(x is None for x in [args.type, args.name, args.hash]):  # no args
-            sf.print_whitelist()
-            sys.exit(0)
-        elif all(x is not None for x in [args.type, args.name, args.hash]):
-            sf.add_to_whitelist(args.type, args.name, args.hash)
-            sf.print_whitelist()
-            sys.exit(0)
-        else:
-            rich.print("[bold red]Please provide all three parameters: type, name, and hash.[/bold red]")
-            whitelist_parser.print_help()
-            sys.exit(1)
     elif args.command == "inspect":
         asyncio.run(print_scan_inspect(mode="inspect", args=args))
         sys.exit(0)

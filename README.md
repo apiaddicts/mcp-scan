@@ -167,7 +167,7 @@ mcp-scan - Security scanner for Model Context Protocol servers and tools
 These options are available for all commands:
 
 ```
---storage-file FILE    Path to store scan results and whitelist information (default: ~/.mcp-scan)
+--storage-file FILE    Path to store scan results and scanner state (default: ~/.mcp-scan)
 --base-url URL         Base URL for the verification server
 --verbose              Enable detailed logging output
 --print-errors         Show error details and tracebacks
@@ -230,36 +230,6 @@ Options:
 --suppress-mcpserver-io BOOL  Suppress stdout/stderr from MCP servers (default: True)
 ```
 
-#### whitelist
-
-Manage the whitelist of approved entities. When no arguments are provided, this command displays the current whitelist.
-
-```
-# View the whitelist
-mcp-scan whitelist
-
-# Add to whitelist
-mcp-scan whitelist TYPE NAME HASH
-
-# Reset the whitelist
-mcp-scan whitelist --reset
-```
-
-Options:
-
-```
---reset                       Reset the entire whitelist
---local-only                  Only update local whitelist, don't contribute to global whitelist
-```
-
-Arguments:
-
-```
-TYPE                          Type of entity to whitelist: "tool", "prompt", or "resource"
-NAME                          Name of the entity to whitelist
-HASH                          Hash of the entity to whitelist
-```
-
 #### help
 
 Display detailed help information and examples.
@@ -279,12 +249,6 @@ mcp-scan ~/custom/config.json
 
 # Just inspect tools without verification
 mcp-scan inspect
-
-# View whitelisted tools
-mcp-scan whitelist
-
-# Whitelist a tool
-mcp-scan whitelist tool "add" "a1b2c3..."
 ```
 
 ## Demo
