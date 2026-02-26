@@ -12,15 +12,11 @@ classifiers = [
 dependencies = [
     "rich==14.2.0",
     "pyjson5>=1.6.8",
-    "aiofiles>=23.1.0",
-    "types-aiofiles",
     "pydantic>=2.11.2",
     "lark>=1.1.9",
     "psutil>=5.9.0",
     "fastapi>=0.115.12",
-    "uvicorn>=0.34.2",
     "pyyaml>=6.0.2",
-    "regex>=2024.11.6",
     "aiohttp>=3.11.16",
     "rapidfuzz>=3.13.0",
     "filelock>=3.18.0",
@@ -40,10 +36,6 @@ build-backend = "hatchling.build"
 packages = ["src/agent_scan"]
 
 [project.optional-dependencies]
-proxy = [
-    "invariant-sdk>=0.0.11",
-    "invariant-ai>=0.3.3",
-]
 test = [
     "pytest>=7.4.0",
     "pytest-lazy-fixtures>=1.1.2",
