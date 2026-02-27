@@ -9,6 +9,7 @@ import rich
 from agent_scan.identity import IdentityManager
 from agent_scan.models import ScanPathResult, ScanPathResultsCreate, ScanUserInfo
 from agent_scan.redact import redact_scan_result
+from agent_scan.utils import get_environment
 from agent_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
 from agent_scan.well_known_clients import get_client_from_path
 
@@ -19,7 +20,7 @@ identity = IdentityManager()
 
 def get_hostname() -> str:
     ci_hostname = os.getenv("AGENT_SCAN_CI_HOSTNAME")
-    if os.getenv("AGENT_SCAN_ENVIRONMENT") == "ci" and ci_hostname:
+    if get_environment() == "ci" and ci_hostname:
         return ci_hostname
     else:
         try:

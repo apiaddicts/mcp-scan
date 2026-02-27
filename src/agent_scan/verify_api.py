@@ -16,6 +16,7 @@ from agent_scan.models import (
     ScanPathResultsCreate,
     ScanUserInfo,
 )
+from agent_scan.utils import get_environment
 from agent_scan.well_known_clients import get_client_from_path
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ identity_manager = IdentityManager()
 
 def get_hostname() -> str:
     ci_hostname = os.getenv("AGENT_SCAN_CI_HOSTNAME")
-    if os.getenv("AGENT_SCAN_ENVIRONMENT") == "ci" and ci_hostname:
+    if get_environment() == "ci" and ci_hostname:
         return ci_hostname
     else:
         try:

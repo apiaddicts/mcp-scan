@@ -13,6 +13,10 @@ from rapidfuzz.distance import Levenshtein
 from agent_scan.models import ControlServer, StdioServer
 
 
+def get_environment() -> str | None:
+    return os.getenv("AGENT_SCAN_ENVIRONMENT", os.getenv("MCP_SCAN_ENVIRONMENT"))
+
+
 def ensure_unicode_console() -> None:
     """On Windows, reconfigure stdout/stderr to UTF-8 so Unicode (e.g. emoji) prints without UnicodeEncodeError.
     Uses errors='replace' so unsupported chars are replaced instead of raising. Safe to call on all platforms.

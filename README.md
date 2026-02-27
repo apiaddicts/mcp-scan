@@ -23,12 +23,12 @@
 
 <br>
 
-Agent Scan helps you keep an inventory of all your installed agent components (harnesses, MCP servers, skills) and scans them for common threats like prompt injections, sensitive data handling or malware payloads hidden in natural language.
+Agent Scan helps you keep an inventory of all your installed agent components (harnesses, MCP servers, skills) and scans them for common threats like prompt injections, sensitive data handling, or malware payloads hidden in natural language.
 
 ## Highlights
 
 - Auto-discover MCP configurations, agent tools, skills
-- Scanning of Claude, Cursor, Windsurf, Gemini CLI and other agents.
+- Scanning of Claude, Cursor, Windsurf, Gemini CLI, and other agents.
 - Detects MCP Security Vulnerabilities:
   - Prompt Injection Attacks
   - Tool Poisoning Attacks
@@ -53,7 +53,7 @@ To run a full scan of your machine (auto-discovers agents, MCP servers, skills),
 uvx snyk-agent-scan@latest --skills
 ```
 
-This will scan for security vulnerabilities in servers, skills, tools, prompts, and resources. It will automatically discover a variety of agent configurations, including Claude Code/Desktop, Cursor, Gemini CLI and Windsurf. Omit `--skills` to skip skill analysis.
+This will scan for security vulnerabilities in servers, skills, tools, prompts, and resources. It will automatically discover a variety of agent configurations, including Claude Code/Desktop, Cursor, Gemini CLI, and Windsurf. Omit `--skills` to skip skill analysis.
 
 You can also scan particular configuration files:
 
@@ -72,7 +72,7 @@ uvx snyk-agent-scan@latest --skills ~/.claude/skills
 
 ## Scanner Capabilities
 
-Agent Scan is a security scanning tool to both scan and inspect the supply chain of agent components on your machine. It scans for common security vulnerabilities like prompt injections, tool poisoning, toxic flows or vulnerabilities in agent skills.
+Agent Scan is a security scanning tool to both scan and inspect the supply chain of agent components on your machine. It scans for common security vulnerabilities like prompt injections, tool poisoning, toxic flows, or vulnerabilities in agent skills.
 
 Agent Scan operates in two main modes which can be used jointly or separately:
 
@@ -84,9 +84,9 @@ Agent Scan operates in two main modes which can be used jointly or separately:
 
 ### Scanning
 
-Agent Scan searches through your local agent's configuration files to find agents, skills and MCP servers. For MCP, it connects to servers and retrieves tool descriptions.
+Agent Scan searches through your local agent's configuration files to find agents, skills, and MCP servers. For MCP, it connects to servers and retrieves tool descriptions.
 
-It then validates the components, both with local checks and by invoking the Agent Scan API. For this, skills, agent applications, tool names and descriptions are shared with Snyk. By using Agent Scan, you agree to the Snyk [terms of use for Agent Scan](./TERMS.md).
+It then validates the components, both with local checks and by invoking the Agent Scan API. For this, skills, agent applications, tool names, and descriptions are shared with Snyk. By using Agent Scan, you agree to the Snyk [terms of use for Agent Scan](./TERMS.md).
 
 A unique, persistent, and anonymous ID is assigned to your scans for analysis. You can opt out of sending this information using the `--opt-out` flag.
 
