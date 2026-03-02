@@ -84,38 +84,6 @@ While the presence of these words alone does not confirm malicious intent, it is
 
 The server exposes more than 100 entities (tools, resources, and prompts combined). Agent performance is expected to degrade when too many tools are available, as the agent's context becomes cluttered and tool selection becomes unreliable. A large number of entities also increases the attack surface.
 
-<a id="W003"></a>
-
-### W003: Could not identify MCP server
-
-![W003 | warning](https://img.shields.io/badge/W003-warning-yellow) ![MCP](https://img.shields.io/badge/MCP-blue)
-
-Agent Scan could not determine the identity of this MCP server in terms of matching to a package manager or registry. This typically indicates custom, homebrew or non-standard server implementations that are not published via Docker/PyPI/NPM/etc which can be a risk.
-
-<a id="W004"></a>
-
-### W004: MCP server not in Agent Scan registry
-
-![W004 | warning](https://img.shields.io/badge/W004-warning-yellow) ![MCP](https://img.shields.io/badge/MCP-blue)
-
-(Utility Warning) The MCP server was identified but is not present in Agent Scan's registry of known servers. Security analysis is applied to the server as best as possible, but it is not as thorough as for servers that are in the registry.
-
-<a id="W005"></a>
-
-### W005: Tool not in registry
-
-![W005 | warning](https://img.shields.io/badge/W005-warning-yellow) ![MCP](https://img.shields.io/badge/MCP-blue)
-
-(Utility Warning) The tool was not found in Agent Scan's registry, even though the server it belongs to is registered. This may indicate that the tool was recently added, renamed, or is not part of the server's expected toolset. It could also indicate a rug pull attack where a server has been modified after initial registration.
-
-<a id="W006"></a>
-
-### W006: Could not run MCP server
-
-![W006 | warning](https://img.shields.io/badge/W006-warning-yellow) ![MCP](https://img.shields.io/badge/MCP-blue)
-
-(Utility Warning) Agent Scan was unable to start the MCP server to retrieve its tools and descriptions. This may happen when the server binary is missing, dependencies like docker or NPM are not installed, or the server configuration is incorrect. Security analysis may still be available if the server identity can be determined and looked up in the registry.
-
 <a id="W007"></a>
 
 ### W007: Insecure credential handling in skill
@@ -203,13 +171,47 @@ The attack works as follows: the agent uses the **untrusted content** tool for a
 
 > **Note:** A single tool may act as **untrusted content** and **destructive** simultaneously.
 
-## Analysis Errors
+## System
 
-An Analysis Error implies that something went wrong during the scan, and that the MCP servers are not being scanned as expected.
+System codes indicate scanner status information, configuration issues, or analysis limitations. These are not security threats but may affect the quality of the scan.
+
+<a id="W003"></a>
+
+### W003: Could not identify MCP server
+
+![W003 | system](https://img.shields.io/badge/W003-system-white) ![MCP](https://img.shields.io/badge/MCP-blue)
+
+Agent Scan could not determine the identity of this MCP server in terms of matching to a package manager or registry. This typically indicates custom, homebrew or non-standard server implementations that are not published via Docker/PyPI/NPM/etc which can be a risk.
+
+<a id="W004"></a>
+
+### W004: MCP server not in Agent Scan registry
+
+![W004 | system](https://img.shields.io/badge/W004-system-white) ![MCP](https://img.shields.io/badge/MCP-blue)
+
+The MCP server was identified but is not present in Agent Scan's registry of known servers. Security analysis is applied to the server as best as possible, but it is not as thorough as for servers that are in the registry.
+
+<a id="W005"></a>
+
+### W005: Tool not in registry
+
+![W005 | system](https://img.shields.io/badge/W005-system-white) ![MCP](https://img.shields.io/badge/MCP-blue)
+
+The tool was not found in Agent Scan's registry, even though the server it belongs to is registered. This may indicate that the tool was recently added, renamed, or is not part of the server's expected toolset. It could also indicate a rug pull attack where a server has been modified after initial registration.
+
+<a id="W006"></a>
+
+### W006: Could not run MCP server
+
+![W006 | system](https://img.shields.io/badge/W006-system-white) ![MCP](https://img.shields.io/badge/MCP-blue)
+
+Agent Scan was unable to start the MCP server to retrieve its tools and descriptions. This may happen when the server binary is missing, dependencies like docker or NPM are not installed, or the server configuration is incorrect. Security analysis may still be available if the server identity can be determined and looked up in the registry.
 
 <a id="X001"></a>
 
 ### X001: Could not reach analysis server
+
+![X001 | system](https://img.shields.io/badge/X001-system-white)
 
 The backend of `snyk-agent-scan` could not be reached. This might happen when:
 
@@ -220,5 +222,7 @@ The backend of `snyk-agent-scan` could not be reached. This might happen when:
 <a id="X002"></a>
 
 ### X002: Whitelisted
+
+![X002 | system](https://img.shields.io/badge/X002-system-white)
 
 The tool has been whitelisted. It will now show in green even if issues are detected.
