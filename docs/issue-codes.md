@@ -225,4 +225,4 @@ The backend of `snyk-agent-scan` could not be reached. This might happen when:
 
 ![X002 | system](https://img.shields.io/badge/X002-system-white)
 
-The tool has been whitelisted. It will now show in green even if issues are detected.
+(deprecated) The tool has been whitelisted. It will now show in green even if issues are detected.
