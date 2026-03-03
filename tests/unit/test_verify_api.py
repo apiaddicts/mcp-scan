@@ -281,7 +281,7 @@ class TestAnalyzeMachineHeaders:
         """Test that additional headers are included in the request."""
         scan_paths = [ScanPathResult(path="/test/path")]
         analysis_url = "https://test.example.com/api"
-        additional_headers = {"X-Custom-Header": "custom-value", "Authorization": "Bearer token123"}
+        additional_headers = {"X-Custom-Header": "custom-value"}
 
         with patch("agent_scan.verify_api.aiohttp.ClientSession") as mock_session_class:
             mock_session = MagicMock()
@@ -316,9 +316,9 @@ class TestAnalyzeMachineHeaders:
             headers = call_kwargs["headers"]
 
             assert "X-Custom-Header" in headers
-            assert headers["X-Custom-Header"] == "custom-value"
+            # Snyk token is included in the Authorization header
             assert "Authorization" in headers
-            assert headers["Authorization"] == "Bearer token123"
+            assert headers["X-Custom-Header"] == "custom-value"
             assert headers["Content-Type"] == "application/json"
 
             assert len(result) == 1
