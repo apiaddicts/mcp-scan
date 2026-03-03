@@ -131,8 +131,12 @@ def get_severity(issue: Issue) -> Literal["info", "low", "medium", "high", "crit
         return "info"
     issue_severity = issue.extra_data.get("severity", None) if issue.extra_data is not None else None
     if issue_severity is None:
-        print(f"No severity found for issue {issue.code} ({issue.message}) ({issue.extra_data})")
-        issue_severity = "medium"
+        if issue.code.startswith("W"):
+            return "medium"
+        elif issue.code.startswith("E"):
+            return "high"
+        else:
+            return "info"
     if not isinstance(issue_severity, str):
         raise ValueError(f"Invalid severity type: {type(issue_severity)}")
     if issue_severity not in ["info", "low", "medium", "high", "critical"]:
@@ -166,18 +170,25 @@ def get_max_severity(
     return severity_levels[max_severity] if max_severity is not None else None
 
 
+def format_issue(issue: Issue) -> str:
+    issue_str = rf"● \[{issue.code} {get_severity(issue)}]: "
+
+    if issue.code == "W015" and issue.extra_data is not None and "reason" in issue.extra_data:
+        issue_str += f"{issue.message} Reason: {issue.extra_data['reason']}"
+    elif issue.code == "W001" and issue.extra_data is not None and "word" in issue.extra_data:
+        issue_str += f'Found the word "{issue.extra_data["word"]}" in the tool description. It is a common word used in prompt injection attacks.'
+    else:
+        issue_str += f"{issue.message}"
+    return (
+        SEVERITY_COLOR_MAP[get_severity(issue)] + issue_str + SEVERITY_COLOR_MAP[get_severity(issue)].replace("[", "[/")
+    )
+
+
 def format_issues(issues: list[Issue], new_line: bool = False) -> str:
     # sort issues by severity
     issues.sort(key=lambda x: get_serverity_score(get_severity(x)), reverse=True)
     separator = "\n" if new_line else " "
-    status_text = separator.join(
-        [
-            SEVERITY_COLOR_MAP[get_severity(issue)]
-            + rf"● \[{issue.code} {get_severity(issue)}]: {issue.message}"
-            + SEVERITY_COLOR_MAP[get_severity(issue)].replace("[", "[/")
-            for issue in issues
-        ]
-    )
+    status_text = separator.join([format_issue(issue) for issue in issues])
     if new_line:
         status_text = "\n" + status_text
     return status_text

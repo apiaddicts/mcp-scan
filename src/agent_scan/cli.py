@@ -589,6 +589,8 @@ async def scan_with_skills(args, mode: Literal["scan", "inspect"]):
     else:
         raise ValueError(f"Unknown mode: {mode}, expected 'scan' or 'inspect'")
 
+    # Filter debug issues
+
     if json_output:
         with suppress_stdout():
             result = await task
