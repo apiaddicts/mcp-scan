@@ -204,7 +204,9 @@ async def analyze_machine(
     snyk_token = os.getenv("SNYK_TOKEN")
     if snyk_token:
         # CLI mode with SNYK_TOKEN environment variable for authentication
-        analysis_url = analysis_url.replace("/hidden/mcp-scan/analysis-machine", "/hidden/mcp-scan/cli/analysis-machine")
+        analysis_url = analysis_url.replace(
+            "/hidden/mcp-scan/analysis-machine", "/hidden/mcp-scan/cli/analysis-machine"
+        )
         headers["Authorization"] = f"token {snyk_token}"
     elif push_key:
         # Enterprise MDM mode with push key
