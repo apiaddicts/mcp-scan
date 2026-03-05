@@ -67,7 +67,7 @@ async def get_mcp_config_per_home_directory(
         path_expanded = expand_path(Path(path), home_directory) if home_directory is not None else Path(path)
         try:
             if path_expanded.exists():
-                client_path = str(path_expanded)
+                client_path = path_expanded.as_posix()
                 break
         except PermissionError:
             logger.warning(f"Permission error for path {path_expanded.as_posix()}")
