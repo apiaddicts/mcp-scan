@@ -35,7 +35,14 @@ Agent Scan helps you keep an inventory of all your installed agent components (h
 
 ## Quick Start
 
-To get started, make sure you have uv [installed](https://docs.astral.sh/uv/getting-started/installation/) on your system.
+To get started:
+
+1. **Sign up at [Snyk](https://snyk.io)** and get an API token from [https://app.snyk.io/account](https://app.snyk.io/account) (API Token → KEY → click to show).
+2. **Set the token as an environment variable** before running any scan:
+   ```bash
+   export SNYK_TOKEN=your-api-token-here
+   ```
+3. Have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed on your system.
 
 ### Scanning
 

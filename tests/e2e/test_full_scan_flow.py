@@ -155,7 +155,7 @@ class TestFullScanFlow:
                 "--json",
                 path,
                 "--analysis-url",
-                "https://api.dev.snyk.io/hidden/mcp-scan/analysis-machine?version=2025-09-07",
+                "https://api.snyk.io/hidden/mcp-scan/analysis-machine?version=2025-09-07",
             ],
             capture_output=True,
             text=True,

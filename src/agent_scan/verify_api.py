@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 identity_manager = IdentityManager()
 
 
+class SnykTokenError(Exception):
+    """Raised when SNYK_TOKEN is required but not set. Handled at top level to exit without traceback."""
+
+
 def get_hostname() -> str:
     ci_hostname = os.getenv("AGENT_SCAN_CI_HOSTNAME")
     if get_environment() == "ci" and ci_hostname:
@@ -200,8 +204,24 @@ async def analyze_machine(
         headers.update(additional_headers)
     if skip_pushing:
         headers["X-Push"] = "skip"
-    if push_key:
+
+    snyk_token = os.getenv("SNYK_TOKEN")
+    if snyk_token:
+        # CLI mode with SNYK_TOKEN environment variable for authentication
+        analysis_url = analysis_url.replace(
+            "/hidden/mcp-scan/analysis-machine", "/hidden/mcp-scan/cli/analysis-machine"
+        )
+        headers["Authorization"] = f"token {snyk_token}"
+    elif push_key:
+        # Enterprise MDM mode with push key
         headers["X-Push-Key"] = push_key
+    else:
+        rich.print(
+            "[bold red]To use Agent Scan, set the SNYK_TOKEN environment variable. "
+            "To get a token, go to https://app.snyk.io/account (API Token -> KEY -> click to show).[/bold red]"
+        )
+        raise SnykTokenError("SNYK_TOKEN environment variable not set")
+
     for attempt in range(max_retries):
         try:
             async with aiohttp.ClientSession(
