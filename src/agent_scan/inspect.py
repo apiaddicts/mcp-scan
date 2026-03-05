@@ -39,14 +39,22 @@ async def get_mcp_config_per_client(client: CandidateClient) -> list[ClientToIns
     Looks for Client (Cursor, VSCode, etc.) across all home directories in the machine.
     """
     ctis: list[ClientToInspect] = []
-    for home_directory in get_readable_home_directories():
-        cti = await get_mcp_config_per_home_directory(client, home_directory)
+
+    if any(path.startswith("~") for path in client.client_exists_paths):
+        for home_directory in get_readable_home_directories():
+            cti = await get_mcp_config_per_home_directory(client, home_directory)
+            if cti is not None:
+                ctis.append(cti)
+    else:
+        cti = await get_mcp_config_per_home_directory(client, None)
         if cti is not None:
             ctis.append(cti)
     return ctis
 
 
-async def get_mcp_config_per_home_directory(client: CandidateClient, home_directory: Path) -> ClientToInspect | None:
+async def get_mcp_config_per_home_directory(
+    client: CandidateClient, home_directory: Path | None
+) -> ClientToInspect | None:
     """
     Looks for Client (Cursor, VSCode, etc.) config files.
     If found, returns a ClientToInspect object with the MCP config paths and skills dir paths.
@@ -56,7 +64,7 @@ async def get_mcp_config_per_home_directory(client: CandidateClient, home_direct
     # check if client exists
     client_path: str | None = None
     for path in client.client_exists_paths:
-        path_expanded = expand_path(Path(path), home_directory)
+        path_expanded = expand_path(Path(path), home_directory) if home_directory is not None else Path(path)
         try:
             if path_expanded.exists():
                 client_path = str(path_expanded)
@@ -77,7 +85,9 @@ async def get_mcp_config_per_home_directory(client: CandidateClient, home_direct
         | CouldNotParseMCPConfig,
     ] = {}
     for mcp_config_path in client.mcp_config_paths:
-        mcp_config_path_expanded = expand_path(Path(mcp_config_path), home_directory)
+        mcp_config_path_expanded = (
+            expand_path(Path(mcp_config_path), home_directory) if home_directory is not None else Path(mcp_config_path)
+        )
         if not mcp_config_path_expanded.exists():
             mcp_configs[mcp_config_path_expanded.as_posix()] = FileNotFoundConfig(
                 message=f"file {mcp_config_path_expanded.as_posix()} does not exist",
@@ -111,7 +121,9 @@ async def get_mcp_config_per_home_directory(client: CandidateClient, home_direct
     # parse skills dirs
     skills_dirs: dict[str, list[tuple[str, SkillServer]] | FileNotFoundConfig] = {}
     for skills_dir_path in client.skills_dir_paths:
-        skills_dir_path_expanded = expand_path(Path(skills_dir_path), home_directory)
+        skills_dir_path_expanded = (
+            expand_path(Path(skills_dir_path), home_directory) if home_directory is not None else Path(skills_dir_path)
+        )
         if skills_dir_path_expanded.exists():
             skills_dirs[skills_dir_path_expanded.as_posix()] = inspect_skills_dir(str(skills_dir_path_expanded))
         else:
