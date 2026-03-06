@@ -34,14 +34,14 @@ from agent_scan.well_known_clients import expand_path, get_readable_home_directo
 logger = logging.getLogger(__name__)
 
 
-async def get_mcp_config_per_client(client: CandidateClient) -> list[ClientToInspect]:
+async def get_mcp_config_per_client(client: CandidateClient, all_users: bool = False) -> list[ClientToInspect]:
     """
     Looks for Client (Cursor, VSCode, etc.) across all home directories in the machine.
     """
     ctis: list[ClientToInspect] = []
 
     if any(path.startswith("~") for path in client.client_exists_paths):
-        for home_directory in get_readable_home_directories():
+        for home_directory in get_readable_home_directories(all_users):
             cti = await get_mcp_config_per_home_directory(client, home_directory)
             if cti is not None:
                 ctis.append(cti)

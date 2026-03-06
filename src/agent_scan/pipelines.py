@@ -30,6 +30,7 @@ class InspectArgs(BaseModel):
     timeout: int
     tokens: list[TokenAndClientInfo]
     paths: list[str]
+    all_users: bool = False
 
 
 class AnalyzeArgs(BaseModel):
@@ -53,11 +54,15 @@ async def inspect_pipeline(
     # fetch clients to inspect
     if inspect_args.paths:
         clients_to_inspect = [
-            cti for path in inspect_args.paths for cti in await client_to_inspect_from_path(path, True)
+            cti
+            for path in inspect_args.paths
+            for cti in await client_to_inspect_from_path(path, True, inspect_args.all_users)
         ]
     else:
         clients_to_inspect = [
-            cti for client in get_well_known_clients() for cti in await get_mcp_config_per_client(client)
+            cti
+            for client in get_well_known_clients()
+            for cti in await get_mcp_config_per_client(client, inspect_args.all_users)
         ]
 
     # inspect
@@ -132,7 +137,9 @@ async def inspect_analyze_push_pipeline(
     return verified_scan_path_results
 
 
-async def client_to_inspect_from_path(path: str, use_path_as_client_name: bool = False) -> list[ClientToInspect]:
+async def client_to_inspect_from_path(
+    path: str, use_path_as_client_name: bool = False, all_users: bool = False
+) -> list[ClientToInspect]:
     if os.path.isdir(os.path.expanduser(path)):
         if os.path.exists(os.path.join(path, "SKILL.md")):
             # split last segment from all other dirs in the path (account for trailing slash)
@@ -156,7 +163,7 @@ async def client_to_inspect_from_path(path: str, use_path_as_client_name: bool =
                 mcp_config_paths=[],
                 skills_dir_paths=[path],
             )
-            return await get_mcp_config_per_client(candidate_client)
+            return await get_mcp_config_per_client(candidate_client, all_users=all_users)
     elif os.path.basename(os.path.normpath(path)).lower() == "skill.md":
         skill_directory = os.path.basename(os.path.dirname(os.path.normpath(path)))
         parent_of_skill_directory = os.path.dirname(os.path.dirname(os.path.normpath(path)))
@@ -178,4 +185,4 @@ async def client_to_inspect_from_path(path: str, use_path_as_client_name: bool =
             mcp_config_paths=[path],
             skills_dir_paths=[],
         )
-        return await get_mcp_config_per_client(candidate_client)
+        return await get_mcp_config_per_client(candidate_client, all_users=all_users)

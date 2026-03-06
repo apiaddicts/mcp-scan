@@ -422,12 +422,15 @@ def get_builtin_tools(path_result: ScanPathResult) -> ScanPathResult:
     return output
 
 
-def get_readable_home_directories() -> list[Path]:
+def get_readable_home_directories(all_users: bool = False) -> list[Path]:
     """
     Retrieve a list of all human user home directories on the machine
     that the current process actually has permission to read and traverse.
     Logs the access status for each found directory.
     """
+    if not all_users:
+        return [Path.home()]
+
     system = platform.system()
     home_dirs: set[Path] = set()
 
