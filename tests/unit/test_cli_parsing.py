@@ -491,6 +491,7 @@ class TestJSONOutput:
                 verbose=False,
                 skills=False,
                 files=[],
+                scan_all_users=False,
             )
 
             captured_output = io.StringIO()
@@ -546,6 +547,7 @@ class TestJSONOutput:
                 verbose=False,
                 skills=False,
                 files=[],
+                scan_all_users=False,
             )
 
             # Capture stdout
