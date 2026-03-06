@@ -1,6 +1,6 @@
 import logging
-import os
 import traceback
+from pathlib import Path
 
 from httpx import HTTPStatusError
 
@@ -29,11 +29,32 @@ from agent_scan.models import (
 from agent_scan.signed_binary import check_server_signature
 from agent_scan.skill_client import inspect_skill, inspect_skills_dir
 from agent_scan.traffic_capture import TrafficCapture
+from agent_scan.well_known_clients import expand_path, get_readable_home_directories
 
 logger = logging.getLogger(__name__)
 
 
-async def get_mcp_config_per_client(client: CandidateClient) -> ClientToInspect | None:
+async def get_mcp_config_per_client(client: CandidateClient, all_users: bool = False) -> list[ClientToInspect]:
+    """
+    Looks for Client (Cursor, VSCode, etc.) across all home directories in the machine.
+    """
+    ctis: list[ClientToInspect] = []
+
+    if any(path.startswith("~") for path in client.client_exists_paths):
+        for home_directory in get_readable_home_directories(all_users):
+            cti = await get_mcp_config_per_home_directory(client, home_directory)
+            if cti is not None:
+                ctis.append(cti)
+    else:
+        cti = await get_mcp_config_per_home_directory(client, None)
+        if cti is not None:
+            ctis.append(cti)
+    return ctis
+
+
+async def get_mcp_config_per_home_directory(
+    client: CandidateClient, home_directory: Path | None
+) -> ClientToInspect | None:
     """
     Looks for Client (Cursor, VSCode, etc.) config files.
     If found, returns a ClientToInspect object with the MCP config paths and skills dir paths.
@@ -43,9 +64,14 @@ async def get_mcp_config_per_client(client: CandidateClient) -> ClientToInspect 
     # check if client exists
     client_path: str | None = None
     for path in client.client_exists_paths:
-        if os.path.exists(os.path.expanduser(path)):
-            client_path = path
-            break
+        path_expanded = expand_path(Path(path), home_directory) if home_directory is not None else Path(path)
+        try:
+            if path_expanded.exists():
+                client_path = path_expanded.as_posix()
+                break
+        except PermissionError:
+            logger.warning(f"Permission error for path {path_expanded.as_posix()}")
+            continue
 
     if client_path is None:
         return None
@@ -59,17 +85,18 @@ async def get_mcp_config_per_client(client: CandidateClient) -> ClientToInspect 
         | CouldNotParseMCPConfig,
     ] = {}
     for mcp_config_path in client.mcp_config_paths:
-        if not os.path.exists(os.path.expanduser(mcp_config_path)):
-            mcp_configs[mcp_config_path] = FileNotFoundConfig(
-                message=f"file {mcp_config_path} does not exist",
+        mcp_config_path_expanded = expand_path(Path(mcp_config_path), home_directory)
+        if not mcp_config_path_expanded.exists():
+            mcp_configs[mcp_config_path_expanded.as_posix()] = FileNotFoundConfig(
+                message=f"file {mcp_config_path_expanded.as_posix()} does not exist",
                 is_failure=False,
             )
             continue
         try:
-            mcp_config = await scan_mcp_config_file(mcp_config_path)
+            mcp_config = await scan_mcp_config_file(str(mcp_config_path_expanded))
             if isinstance(mcp_config, UnknownMCPConfig):
-                mcp_configs[mcp_config_path] = UnknownConfigFormat(
-                    message=f"Unknown MCP config: {mcp_config_path}",
+                mcp_configs[mcp_config_path_expanded.as_posix()] = UnknownConfigFormat(
+                    message=f"Unknown MCP config: {mcp_config_path_expanded.as_posix()}",
                     is_failure=False,
                 )
                 continue
@@ -78,13 +105,13 @@ async def get_mcp_config_per_client(client: CandidateClient) -> ClientToInspect 
             for server_config in server_configs_by_name.values():
                 if isinstance(server_config, StdioServer):
                     server_config = check_server_signature(server_config)
-            mcp_configs[mcp_config_path] = [
+            mcp_configs[mcp_config_path_expanded.as_posix()] = [
                 (server_name, server) for server_name, server in server_configs_by_name.items()
             ]
         except Exception as e:
-            logger.exception(f"Error parsing MCP config file {mcp_config_path}: {e}")
-            mcp_configs[mcp_config_path] = CouldNotParseMCPConfig(
-                message=f"could not parse file {mcp_config_path}",
+            logger.exception(f"Error parsing MCP config file {mcp_config_path_expanded.as_posix()}: {e}")
+            mcp_configs[mcp_config_path_expanded.as_posix()] = CouldNotParseMCPConfig(
+                message=f"could not parse file {mcp_config_path_expanded.as_posix()}",
                 traceback=traceback.format_exc(),
                 is_failure=True,
             )
@@ -92,10 +119,13 @@ async def get_mcp_config_per_client(client: CandidateClient) -> ClientToInspect 
     # parse skills dirs
     skills_dirs: dict[str, list[tuple[str, SkillServer]] | FileNotFoundConfig] = {}
     for skills_dir_path in client.skills_dir_paths:
-        if os.path.exists(os.path.expanduser(skills_dir_path)):
-            skills_dirs[skills_dir_path] = inspect_skills_dir(skills_dir_path)
+        skills_dir_path_expanded = expand_path(Path(skills_dir_path), home_directory)
+        if skills_dir_path_expanded.exists():
+            skills_dirs[skills_dir_path_expanded.as_posix()] = inspect_skills_dir(str(skills_dir_path_expanded))
         else:
-            skills_dirs[skills_dir_path] = FileNotFoundConfig(message=f"Skills dir {skills_dir_path} does not exist")
+            skills_dirs[skills_dir_path_expanded.as_posix()] = FileNotFoundConfig(
+                message=f"Skills dir {skills_dir_path_expanded.as_posix()} does not exist"
+            )
 
     return ClientToInspect(
         name=client.name,

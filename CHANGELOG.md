@@ -59,4 +59,5 @@
 - `0.4.1` Add more agent support and rebalance command args earlier.
 - `0.4.2` Add support for HTTP_PROXY and HTTPS_PROXY configuration.
 - `0.4.3` Rename to agent-scan.
-- `0.4.4` Use Snyk API Key for analysis
+- `0.4.4` Use Snyk API Key for analysis.
+- `0.4.5` Add possibility to scan agent on multiple users.

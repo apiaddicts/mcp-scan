@@ -30,6 +30,7 @@ class InspectArgs(BaseModel):
     timeout: int
     tokens: list[TokenAndClientInfo]
     paths: list[str]
+    all_users: bool = False
 
 
 class AnalyzeArgs(BaseModel):
@@ -52,9 +53,17 @@ async def inspect_pipeline(
 ) -> list[ScanPathResult]:
     # fetch clients to inspect
     if inspect_args.paths:
-        clients_to_inspect = [await client_to_inspect_from_path(path, True) for path in inspect_args.paths]
+        clients_to_inspect = [
+            cti
+            for path in inspect_args.paths
+            for cti in await client_to_inspect_from_path(path, True, inspect_args.all_users)
+        ]
     else:
-        clients_to_inspect = [await get_mcp_config_per_client(client) for client in get_well_known_clients()]
+        clients_to_inspect = [
+            cti
+            for client in get_well_known_clients()
+            for cti in await get_mcp_config_per_client(client, inspect_args.all_users)
+        ]
 
     # inspect
     scan_path_results: list[ScanPathResult] = []
@@ -128,21 +137,25 @@ async def inspect_analyze_push_pipeline(
     return verified_scan_path_results
 
 
-async def client_to_inspect_from_path(path: str, use_path_as_client_name: bool = False) -> ClientToInspect | None:
+async def client_to_inspect_from_path(
+    path: str, use_path_as_client_name: bool = False, all_users: bool = False
+) -> list[ClientToInspect]:
     if os.path.isdir(os.path.expanduser(path)):
         if os.path.exists(os.path.join(path, "SKILL.md")):
             # split last segment from all other dirs in the path (account for trailing slash)
             last_dir = os.path.basename(os.path.normpath(path))
 
             path_without_last_dir = os.path.dirname(path)
-            return ClientToInspect(
-                name="not-available" if use_path_as_client_name else path,
-                client_path=path_without_last_dir,
-                mcp_configs={},
-                skills_dirs={
-                    path_without_last_dir: [(last_dir, SkillServer(path=path))],
-                },
-            )
+            return [
+                ClientToInspect(
+                    name="not-available" if use_path_as_client_name else path,
+                    client_path=path_without_last_dir,
+                    mcp_configs={},
+                    skills_dirs={
+                        path_without_last_dir: [(last_dir, SkillServer(path=path))],
+                    },
+                )
+            ]
         else:
             candidate_client = CandidateClient(
                 name="not-available" if use_path_as_client_name else path,
@@ -150,19 +163,21 @@ async def client_to_inspect_from_path(path: str, use_path_as_client_name: bool =
                 mcp_config_paths=[],
                 skills_dir_paths=[path],
             )
-            return await get_mcp_config_per_client(candidate_client)
+            return await get_mcp_config_per_client(candidate_client, all_users=all_users)
     elif os.path.basename(os.path.normpath(path)).lower() == "skill.md":
         skill_directory = os.path.basename(os.path.dirname(os.path.normpath(path)))
         parent_of_skill_directory = os.path.dirname(os.path.dirname(os.path.normpath(path)))
 
-        return ClientToInspect(
-            name="not-available" if use_path_as_client_name else path,
-            client_path=parent_of_skill_directory,
-            mcp_configs={},
-            skills_dirs={
-                parent_of_skill_directory: [(skill_directory, SkillServer(path=os.path.dirname(path)))],
-            },
-        )
+        return [
+            ClientToInspect(
+                name="not-available" if use_path_as_client_name else path,
+                client_path=parent_of_skill_directory,
+                mcp_configs={},
+                skills_dirs={
+                    parent_of_skill_directory: [(skill_directory, SkillServer(path=os.path.dirname(path)))],
+                },
+            )
+        ]
     else:
         candidate_client = CandidateClient(
             name="not-available" if use_path_as_client_name else path,
@@ -170,4 +185,4 @@ async def client_to_inspect_from_path(path: str, use_path_as_client_name: bool =
             mcp_config_paths=[path],
             skills_dir_paths=[],
         )
-        return await get_mcp_config_per_client(candidate_client)
+        return await get_mcp_config_per_client(candidate_client, all_users=all_users)

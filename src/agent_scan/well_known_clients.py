@@ -1,7 +1,10 @@
 import logging
 import os
+import platform
 import re
+import subprocess
 import sys
+from pathlib import Path
 
 from mcp.types import Implementation, InitializeResult, ServerCapabilities, Tool, ToolsCapability
 
@@ -417,3 +420,87 @@ def get_builtin_tools(path_result: ScanPathResult) -> ScanPathResult:
         logger.warning("Unknown client; not adding built-in tools for %s", client)
 
     return output
+
+
+def get_readable_home_directories(all_users: bool = False) -> list[Path]:
+    """
+    Retrieve a list of all human user home directories on the machine
+    that the current process actually has permission to read and traverse.
+    Logs the access status for each found directory.
+    """
+    if not all_users:
+        return [Path.home()]
+
+    system = platform.system()
+    home_dirs: set[Path] = set()
+
+    if system in ("Linux", "Darwin"):
+        import pwd
+
+        # macOS usually starts human UIDs at 500, Linux at 1000
+        uid_threshold = 500 if system == "Darwin" else 1000
+
+        for user in pwd.getpwall():
+            if user.pw_uid >= uid_threshold and user.pw_name != "nobody":
+                dir_path = Path(user.pw_dir)
+
+                if dir_path.is_dir():
+                    # Check for Read (R_OK) and Traverse/Execute (X_OK) permissions
+                    if os.access(dir_path, os.R_OK | os.X_OK):
+                        logger.info(f"Found user '{user.pw_name}' at {dir_path} -> Access: GRANTED")
+                        home_dirs.add(dir_path)
+                    else:
+                        logger.info(f"Found user '{user.pw_name}' at {dir_path} -> Access: DENIED")
+
+    elif system == "Windows":
+        try:
+            cmd = [
+                "powershell",
+                "-NoProfile",
+                "-Command",
+                "Get-CimInstance Win32_UserProfile | Where-Object { $_.Special -eq $false } | Select-Object -ExpandProperty LocalPath",
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+
+            for line in result.stdout.splitlines():
+                clean_path = line.strip()
+                if clean_path:
+                    dir_path = Path(clean_path)
+                    if dir_path.is_dir():
+                        # Windows primarily relies on R_OK for basic directory readability
+                        if os.access(dir_path, os.R_OK):
+                            logger.info(f"Found profile at {dir_path} -> Access: GRANTED")
+                            home_dirs.add(dir_path)
+                        else:
+                            logger.info(f"Found profile at {dir_path} -> Access: DENIED")
+
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            logger.error(f"Failed to fetch Windows profiles: {e}")
+
+    else:
+        raise NotImplementedError(f"Unsupported OS: {system}")
+
+    return list(home_dirs)
+
+
+def expand_path(path: Path, home_directory: Path | None) -> Path:
+    if home_directory is None or not str(path).startswith("~"):
+        return path
+
+    suffix = path.parts[1:]
+    return home_directory / Path(*suffix)
+
+
+def expand_paths_all_home_directories(paths: list[str]) -> list[str]:
+    """
+    Expand the paths to include the home directories.
+    """
+    home_directories = get_readable_home_directories(all_users=True)
+    new_paths: list[str] = []
+    for path in paths:
+        if path.startswith("~"):
+            for home_directory in home_directories:
+                new_paths.append(expand_path(Path(path), home_directory).as_posix())
+        else:
+            new_paths.append(path)
+    return new_paths

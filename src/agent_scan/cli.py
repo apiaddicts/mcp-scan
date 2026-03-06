@@ -26,7 +26,11 @@ from agent_scan.upload import get_hostname, upload
 from agent_scan.utils import ensure_unicode_console, parse_headers, suppress_stdout
 from agent_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
 from agent_scan.version import version_info
-from agent_scan.well_known_clients import WELL_KNOWN_MCP_PATHS, client_shorthands_to_paths
+from agent_scan.well_known_clients import (
+    WELL_KNOWN_MCP_PATHS,
+    client_shorthands_to_paths,
+    expand_paths_all_home_directories,
+)
 
 # Configure logging to suppress all output by default
 logging.getLogger().setLevel(logging.CRITICAL + 1)  # Higher than any standard level
@@ -203,6 +207,12 @@ def add_common_arguments(parser):
         default=False,
         action="store_true",
         help="Scan skills beyond mcp servers.",
+    )
+    parser.add_argument(
+        "--scan-all-users",
+        default=False,
+        action="store_true",
+        help="Scan all users on the machine.",
     )
 
 
@@ -458,6 +468,9 @@ async def evo(args):
     if not args.files:
         args.files = WELL_KNOWN_MCP_PATHS
 
+    if args.scan_all_users:
+        args.files = expand_paths_all_home_directories(args.files)
+
     rich.print(
         "Go to https://app.snyk.io and select the tenant on the left nav bar. Copy the Tenant ID from the URL and paste it here: "
     )
@@ -537,6 +550,7 @@ async def scan_with_skills(args, mode: Literal["scan", "inspect"]):
     print_errors: bool = hasattr(args, "print_errors") and args.print_errors
     full_toxic_flows: bool = hasattr(args, "full_toxic_flows") and args.full_toxic_flows
     full_description: bool = hasattr(args, "print_full_descriptions") and args.print_full_descriptions
+    scan_all_users: bool = hasattr(args, "scan_all_users") and args.scan_all_users
 
     # collect inspect args
     server_timeout: int = args.server_timeout if hasattr(args, "server_timeout") else 10
@@ -550,6 +564,7 @@ async def scan_with_skills(args, mode: Literal["scan", "inspect"]):
         timeout=server_timeout,
         tokens=tokens,
         paths=files,
+        all_users=scan_all_users,
     )
 
     if mode == "scan":
@@ -648,6 +663,9 @@ async def print_scan_inspect(mode="scan", args=None):
 
     if not args.files:
         args.files = WELL_KNOWN_MCP_PATHS
+
+    if args.scan_all_users:
+        args.files = expand_paths_all_home_directories(args.files)
 
     if args.json:
         with suppress_stdout():
