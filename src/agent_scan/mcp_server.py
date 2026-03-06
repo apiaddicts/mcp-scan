@@ -15,7 +15,7 @@ import rich
 from mcp.server.fastmcp import FastMCP
 from rich.logging import RichHandler
 
-from agent_scan.cli import run_scan_inspect
+from agent_scan.cli import run_scan
 from agent_scan.mcp_client import scan_mcp_config_file
 from agent_scan.models import StdioServer
 from agent_scan.Storage import Storage
@@ -128,7 +128,7 @@ async def perform_and_schedule_scan(path, args):
                 logger.info(f"Scan is scheduled for {sdate}; running scan")
             else:
                 logger.info("No scan is scheduled; running scan")
-            result = await run_scan_inspect(mode="scan", args=args)
+            result = await run_scan(args, mode="scan")
 
             # Convert result to JSON format for return
             result_dict = {r.path: r.model_dump(mode="json") for r in result}
@@ -255,7 +255,7 @@ def mcp_server(args):
             """Performs a the current MCP setup (this client + tools it uses)"""
 
             # Run the actual scan
-            result = await run_scan_inspect(mode="scan", args=args)
+            result = await run_scan(args, mode="scan")
 
             # Convert result to JSON format for return
             result_dict = {r.path: r.model_dump(mode="json") for r in result}
