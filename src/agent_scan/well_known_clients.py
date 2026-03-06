@@ -483,8 +483,8 @@ def get_readable_home_directories(all_users: bool = False) -> list[Path]:
     return list(home_dirs)
 
 
-def expand_path(path: Path, home_directory: Path) -> Path:
-    if not str(path).startswith("~"):
+def expand_path(path: Path, home_directory: Path | None) -> Path:
+    if home_directory is None or not str(path).startswith("~"):
         return path
 
     suffix = path.parts[1:]

@@ -85,9 +85,7 @@ async def get_mcp_config_per_home_directory(
         | CouldNotParseMCPConfig,
     ] = {}
     for mcp_config_path in client.mcp_config_paths:
-        mcp_config_path_expanded = (
-            expand_path(Path(mcp_config_path), home_directory) if home_directory is not None else Path(mcp_config_path)
-        )
+        mcp_config_path_expanded = expand_path(Path(mcp_config_path), home_directory)
         if not mcp_config_path_expanded.exists():
             mcp_configs[mcp_config_path_expanded.as_posix()] = FileNotFoundConfig(
                 message=f"file {mcp_config_path_expanded.as_posix()} does not exist",
@@ -121,9 +119,7 @@ async def get_mcp_config_per_home_directory(
     # parse skills dirs
     skills_dirs: dict[str, list[tuple[str, SkillServer]] | FileNotFoundConfig] = {}
     for skills_dir_path in client.skills_dir_paths:
-        skills_dir_path_expanded = (
-            expand_path(Path(skills_dir_path), home_directory) if home_directory is not None else Path(skills_dir_path)
-        )
+        skills_dir_path_expanded = expand_path(Path(skills_dir_path), home_directory)
         if skills_dir_path_expanded.exists():
             skills_dirs[skills_dir_path_expanded.as_posix()] = inspect_skills_dir(str(skills_dir_path_expanded))
         else:
