@@ -179,6 +179,7 @@ async def inspect_extension(
             assert isinstance(fixed_config, RemoteServer), f"Fixed config is not a RemoteServer: {fixed_config}"
             return InspectedExtensions(name=name, config=config, signature_or_error=signature)
         except HTTPStatusError as e:
+            config.type = "http" if config.type is None else config.type
             return InspectedExtensions(
                 name=name,
                 config=config,
@@ -191,6 +192,7 @@ async def inspect_extension(
                 ),
             )
         except Exception as e:
+            config.type = "http" if config.type is None else config.type
             return InspectedExtensions(
                 name=name,
                 config=config,
