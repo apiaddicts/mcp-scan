@@ -232,6 +232,58 @@ class TestFullScanFlow:
             yield temp_file.name
 
     @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
+    @pytest.mark.parametrize(
+        "skill_path",
+        [
+            "tests/mcp_servers/.test-client/skills",
+            "tests/mcp_servers/.test-client/skills/test-skill",
+            "tests/mcp_servers/.test-client/skills/test-skill/SKILL.md",
+        ],
+        ids=["skills_parent_dir", "skill_folder", "skill_md_file"],
+    )
+    def test_scan_skills_with_flag(self, agent_scan_cmd, skill_path):
+        """Test that scanning skill paths works when --skills flag is provided."""
+        result = subprocess.run(
+            [*agent_scan_cmd, "scan", "--json", "--skills", skill_path],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, f"Command failed with error: {result.stderr}"
+        output = json.loads(result.stdout)
+        assert len(output) >= 1, "Output should contain at least one entry"
+        all_servers = [server for entry in output.values() for server in entry["servers"]]
+        skill_servers = [s for s in all_servers if s["server"]["type"] == "skill"]
+        assert len(skill_servers) >= 1, f"Expected at least one skill server, got: {output}"
+        assert any(s["name"] == "test-skill" for s in skill_servers), (
+            f"Expected a skill server named 'test-skill', got: {[s['name'] for s in skill_servers]}"
+        )
+
+    @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
+    @pytest.mark.parametrize(
+        "skill_path",
+        [
+            "tests/mcp_servers/.test-client/skills",
+            "tests/mcp_servers/.test-client/skills/test-skill",
+            "tests/mcp_servers/.test-client/skills/test-skill/SKILL.md",
+        ],
+        ids=["skills_parent_dir", "skill_folder", "skill_md_file"],
+    )
+    def test_scan_skills_without_flag(self, agent_scan_cmd, skill_path):
+        """Test that scanning skill paths does NOT produce skill results without --skills flag."""
+        result = subprocess.run(
+            [*agent_scan_cmd, "scan", "--json", skill_path],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, f"Command failed with error: {result.stderr}"
+        output = json.loads(result.stdout)
+        all_servers = [server for entry in output.values() for server in entry["servers"]]
+        skill_servers = [s for s in all_servers if s["server"]["type"] == "skill"]
+        assert len(skill_servers) == 0, (
+            f"Expected no skill servers without --skills flag, got: {[s['name'] for s in skill_servers]}"
+        )
+
+    @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
     def test_vscode_settings_no_mcp(self, agent_scan_cmd, vscode_settings_no_mcp_file):
         """Test scanning VSCode settings with no MCP configurations."""
         result = subprocess.run(
