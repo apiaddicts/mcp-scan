@@ -2,11 +2,17 @@
 
 import json
 import subprocess
+from pathlib import PurePosixPath, PureWindowsPath
 
 import pytest
 from pytest_lazy_fixtures import lf
 
 from agent_scan.utils import TempFile
+
+
+def posix(path: str) -> str:
+    """Normalize a path to forward slashes so it matches the scanner's JSON output keys."""
+    return PurePosixPath(PureWindowsPath(path)).as_posix()
 
 
 class TestFullScanFlow:
@@ -41,7 +47,7 @@ class TestFullScanFlow:
         # Try to parse the output as JSON
         try:
             output = json.loads(result.stdout)
-            assert sample_config_file in output
+            assert posix(sample_config_file) in output
         except json.JSONDecodeError:
             print(result.stdout)
             pytest.fail("Failed to parse JSON output")
@@ -64,7 +70,7 @@ class TestFullScanFlow:
         assert result.returncode == 0, f"Command failed with error: {result.stderr}"
         output = json.loads(result.stdout)
         assert len(output) == 1, "Output should contain exactly one entry for the config file"
-        assert {tool["name"] for tool in output[sample_config_file]["servers"][0]["signature"]["tools"]} == {
+        assert {tool["name"] for tool in output[posix(sample_config_file)]["servers"][0]["signature"]["tools"]} == {
             "is_prime",
             "gcd",
             "lcm",
@@ -96,8 +102,8 @@ class TestFullScanFlow:
         output = json.loads(result.stdout)
         assert len(output) == 1, "Output should contain exactly one entry for the config file"
         url = f"http://localhost:{port}/sse" if transport == "sse" else f"http://localhost:{port}/mcp"
-        assert output[file_name]["servers"][0]["server"]["type"] == transport, json.dumps(output, indent=4)
-        assert output[file_name]["servers"][0]["server"]["url"] == url, json.dumps(output, indent=4)
+        assert output[posix(file_name)]["servers"][0]["server"]["type"] == transport, json.dumps(output, indent=4)
+        assert output[posix(file_name)]["servers"][0]["server"]["url"] == url, json.dumps(output, indent=4)
 
     @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
     @pytest.mark.parametrize(
@@ -136,7 +142,7 @@ class TestFullScanFlow:
         assert result.returncode == 0, f"Command failed with error: {result.stderr}"
         output = json.loads(result.stdout)
         assert len(output) == 1, "Output should contain exactly one entry for the config file"
-        assert output[file_name]["servers"][0]["server"]["type"] == transport, json.dumps(output, indent=4)
+        assert output[posix(file_name)]["servers"][0]["server"]["type"] == transport, json.dumps(output, indent=4)
 
     @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
     @pytest.mark.parametrize(
@@ -390,6 +396,6 @@ class TestFullScanFlow:
         # Try to parse the output as JSON
         try:
             output = json.loads(result.stdout)
-            assert vscode_settings_no_mcp_file in output
+            assert posix(vscode_settings_no_mcp_file) in output
         except json.JSONDecodeError:
             pytest.fail("Failed to parse JSON output")
