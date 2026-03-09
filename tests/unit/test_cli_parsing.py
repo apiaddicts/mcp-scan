@@ -21,7 +21,6 @@ class TestControlServerParsing:
         assert result[0]["url"] == "https://server1.com"
         assert result[0]["headers"] == []
         assert result[0]["identifier"] is None
-        assert result[0]["opt_out"] is False
 
     def test_parse_single_control_server_with_all_options(self):
         """Test parsing a single control server with all options."""
@@ -40,7 +39,6 @@ class TestControlServerParsing:
         assert result[0]["url"] == "https://server1.com"
         assert result[0]["headers"] == ["Auth: token1"]
         assert result[0]["identifier"] == "user@example.com"
-        assert result[0]["opt_out"] is True
 
     def test_parse_single_control_server_with_multiple_headers(self):
         """Test parsing a single control server with multiple headers."""
@@ -67,7 +65,6 @@ class TestControlServerParsing:
             "Auth: token1",
             "--control-identifier",
             "user@example.com",
-            "--opt-out",
             "--control-server",
             "https://server2.com",
             "--control-server-H",
@@ -83,13 +80,11 @@ class TestControlServerParsing:
         assert result[0]["url"] == "https://server1.com"
         assert result[0]["headers"] == ["Auth: token1"]
         assert result[0]["identifier"] == "user@example.com"
-        assert result[0]["opt_out"] is True
 
         # Second server
         assert result[1]["url"] == "https://server2.com"
         assert result[1]["headers"] == ["Auth: token2"]
         assert result[1]["identifier"] == "serial-123"
-        assert result[1]["opt_out"] is False
 
     def test_parse_multiple_control_servers_mixed_options(self):
         """Test parsing multiple servers where some have certain options and others don't."""
@@ -100,7 +95,6 @@ class TestControlServerParsing:
             "user1",
             "--control-server",
             "https://server2.com",
-            "--opt-out",
             "--control-server",
             "https://server3.com",
             "--control-server-H",
@@ -116,11 +110,9 @@ class TestControlServerParsing:
         assert result[0]["url"] == "https://server1.com"
         assert result[0]["identifier"] == "user1"
         assert result[0]["headers"] == []
-        assert result[0]["opt_out"] is False
 
         # Second server: only opt-out
         assert result[1]["url"] == "https://server2.com"
-        assert result[1]["opt_out"] is True
         assert result[1]["identifier"] is None
         assert result[1]["headers"] == []
 
@@ -128,7 +120,6 @@ class TestControlServerParsing:
         assert result[2]["url"] == "https://server3.com"
         assert result[2]["headers"] == ["Auth: token3", "X-Custom: value3"]
         assert result[2]["identifier"] is None
-        assert result[2]["opt_out"] is False
 
     def test_parse_control_servers_with_other_cli_args(self):
         """Test that control server parsing doesn't interfere with other CLI arguments."""
@@ -142,7 +133,6 @@ class TestControlServerParsing:
             "--json",
             "--control-server",
             "https://server2.com",
-            "--opt-out",
             "--storage-file",
             "~/.mcp-scan",
         ]
@@ -152,7 +142,6 @@ class TestControlServerParsing:
         assert result[0]["url"] == "https://server1.com"
         assert result[0]["identifier"] == "user1"
         assert result[1]["url"] == "https://server2.com"
-        assert result[1]["opt_out"] is True
 
     def test_parse_no_control_servers(self):
         """Test parsing when no control servers are specified."""
@@ -166,7 +155,6 @@ class TestControlServerParsing:
         argv = [
             "--control-identifier",
             "should-be-ignored",
-            "--opt-out",
             "--control-server",
             "https://server1.com",
             "--control-identifier",
@@ -247,10 +235,8 @@ class TestCLIArgumentParsing:
         assert len(control_servers) == 2
         assert control_servers[0]["url"] == "https://server1.com"
         assert control_servers[0]["identifier"] == "user1@example.com"
-        assert control_servers[0]["opt_out"] is True
         assert control_servers[1]["url"] == "https://server2.com"
         assert control_servers[1]["identifier"] == "serial-123"
-        assert control_servers[1]["opt_out"] is False
 
 
 class TestControlServerHeaderParsing:
@@ -325,12 +311,11 @@ class TestControlServerUploadIntegration:
                 analysis_url="https://test.com/analysis",
                 skip_ssl_verify=False,
                 control_servers=[
-                    {"url": "https://server1.com", "headers": ["Auth: token1"], "identifier": "user1", "opt_out": True},
+                    {"url": "https://server1.com", "headers": ["Auth: token1"], "identifier": "user1"},
                     {
                         "url": "https://server2.com",
                         "headers": ["Auth: token2", "X-Custom: value"],
                         "identifier": "user2",
-                        "opt_out": False,
                     },
                 ],
             )
@@ -342,10 +327,8 @@ class TestControlServerUploadIntegration:
             assert len(push_args.control_servers) == 2
             assert push_args.control_servers[0].url == "https://server1.com"
             assert push_args.control_servers[0].identifier == "user1"
-            assert push_args.control_servers[0].opt_out is True
             assert push_args.control_servers[1].url == "https://server2.com"
             assert push_args.control_servers[1].identifier == "user2"
-            assert push_args.control_servers[1].opt_out is False
 
     @pytest.mark.asyncio
     async def test_no_control_servers_passed_to_pipeline(self):
@@ -397,7 +380,7 @@ class TestControlServerUploadIntegration:
                 files=[],
                 mcp_oauth_tokens_path=None,
                 analysis_url="https://test.com/analysis",
-                control_servers=[{"url": "https://server1.com", "headers": [], "identifier": None, "opt_out": False}],
+                control_servers=[{"url": "https://server1.com", "headers": [], "identifier": None}],
             )
 
             await run_scan(args_without, mode="scan")
@@ -418,7 +401,7 @@ class TestControlServerUploadIntegration:
                 mcp_oauth_tokens_path=None,
                 analysis_url="https://test.com/analysis",
                 skip_ssl_verify=True,
-                control_servers=[{"url": "https://server1.com", "headers": [], "identifier": None, "opt_out": False}],
+                control_servers=[{"url": "https://server1.com", "headers": [], "identifier": None}],
             )
 
             await run_scan(args_with, mode="scan")
@@ -447,7 +430,6 @@ class TestJSONOutput:
             args = Namespace(
                 json=True,
                 print_errors=False,
-                full_toxic_flows=False,
                 print_full_descriptions=False,
                 verbose=False,
             )
@@ -489,7 +471,6 @@ class TestJSONOutput:
             args = Namespace(
                 json=True,
                 print_errors=False,
-                full_toxic_flows=False,
                 print_full_descriptions=False,
                 verbose=False,
             )

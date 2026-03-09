@@ -6,10 +6,10 @@ import os
 import aiohttp
 import rich
 
-from agent_scan.models import ScanPathResult, ScanPathResultsCreate
+from agent_scan.models import ScanPathResult, ScanPathResultsCreate, ScanUserInfo
 from agent_scan.redact import redact_scan_result
 from agent_scan.utils import get_environment
-from agent_scan.verify_api import get_user_info, setup_aiohttp_debug_logging, setup_tcp_connector
+from agent_scan.verify_api import setup_aiohttp_debug_logging, setup_tcp_connector
 from agent_scan.well_known_clients import get_client_from_path
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,6 @@ async def upload(
     results: list[ScanPathResult],
     control_server: str,
     identifier: str | None = None,
-    opt_out: bool = False,
     verbose: bool = False,
     additional_headers: dict | None = None,
     max_retries: int = 3,
@@ -51,7 +50,6 @@ async def upload(
         results: List of scan path results to upload
         control_server: Base URL of the control server
         identifier: Non-anonymous identifier for the user
-        opt_out: Whether to opt-out of sending personal information
         verbose: Whether to enable verbose logging
         additional_headers: Additional HTTP headers to send
         max_retries: Maximum number of retry attempts (default: 3)
@@ -65,7 +63,13 @@ async def upload(
     additional_headers = additional_headers or {}
 
     # Normalize control server URL
-    user_info = get_user_info(identifier=identifier, opt_out=opt_out)
+    user_info = ScanUserInfo(
+        hostname=get_hostname(),
+        username=get_username(),
+        identifier=identifier,
+        ip_address=None,
+        anonymous_identifier=None,
+    )
 
     results_with_servers = []
     for result in results:

@@ -561,4 +561,3 @@ class ControlServer(BaseModel):
     url: str
     headers: dict[str, str]
     identifier: str | None = None
-    opt_out: bool = False

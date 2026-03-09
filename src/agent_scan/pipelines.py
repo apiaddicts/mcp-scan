@@ -39,7 +39,6 @@ class AnalyzeArgs(BaseModel):
     analysis_url: str
     identifier: str | None = None
     additional_headers: dict | None = None
-    opt_out_of_identity: bool = False
     max_retries: int = 3
     skip_ssl_verify: bool = False
 
@@ -117,7 +116,6 @@ async def inspect_analyze_push_pipeline(
         analysis_url=analyze_args.analysis_url,
         identifier=analyze_args.identifier,
         additional_headers=analyze_args.additional_headers,
-        opt_out_of_identity=analyze_args.opt_out_of_identity,
         verbose=verbose,
         skip_pushing=bool(push_args.control_servers),
         push_key=get_push_key(push_args.control_servers),
@@ -131,7 +129,6 @@ async def inspect_analyze_push_pipeline(
             verified_scan_path_results,
             control_server.url,
             control_server.identifier,
-            control_server.opt_out,
             verbose=verbose,
             additional_headers=control_server.headers,
             skip_ssl_verify=push_args.skip_ssl_verify,

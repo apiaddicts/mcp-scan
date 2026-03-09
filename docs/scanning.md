@@ -33,11 +33,9 @@ uvx snyk-agent-scan@latest  --skills ~/.claude/skills
 
 ![Scanning overview](assets/scan.svg)
 
-Agent Scan searches through your local agent's configuration files to find agents, skills, and MCP servers. For MCP, it connects to servers and retrieves tool descriptions.
+Agent Scan searches through your local agent's configuration files to find agents, skills, and MCP servers. For MCP, it connects to servers and retrieves tool descriptions. Omit `--skills` to skip skill analysis.
 
 It then validates the components, both with local checks and by invoking the Agent Scan API. For this, skills, agent applications, tool names, and descriptions are shared with Snyk. By using Agent Scan, you agree to the Snyk [terms of use for Agent Scan](../TERMS.md).
-
-A unique, persistent, and anonymous ID is assigned to your scans for analysis. You can opt out of sending this information using the `--opt-out` flag.
 
 Agent Scan does not store or log any usage data, i.e. the contents and results of your MCP tool calls.
 
@@ -58,9 +56,6 @@ These options are available for all commands:
 --print-errors         Show error details and tracebacks
 --full-toxic-flows     Show all tools that could take part in toxic flow. By default only the top 3 are shown.
 --json                 Output results in JSON format instead of rich text
---skills                          Autodetects and analyzes skills
---skills PATH_TO_SKILL_MD_FILE    Analyzes the specific skill
---skills PATHS_TO_DIRECTORY       Recursively detects and analyzes all skills in the directory
 ```
 
 ### Commands
@@ -79,6 +74,9 @@ Options:
 --checks-per-server NUM           Number of checks to perform on each server (default: 1)
 --server-timeout SECONDS          Seconds to wait before timing out server connections (default: 10)
 --suppress-mcpserver-io BOOL      Suppress stdout/stderr from MCP servers (default: True)
+--skills                          Autodetects and analyzes skills
+--skills PATH_TO_SKILL_MD_FILE    Analyzes the specific skill
+--skills PATHS_TO_DIRECTORY       Recursively detects and analyzes all skills in the directory
 ```
 
 #### inspect

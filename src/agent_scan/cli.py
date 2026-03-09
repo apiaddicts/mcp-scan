@@ -91,7 +91,6 @@ def parse_control_servers(argv):
     - url: the control server URL
     - headers: list of additional headers
     - identifier: the control identifier (or None)
-    - opt_out: boolean indicating if opt-out is enabled
     """
     control_servers = []
     current_server = None
@@ -111,7 +110,6 @@ def parse_control_servers(argv):
                     "url": argv[i + 1],
                     "headers": [],
                     "identifier": None,
-                    "opt_out": False,
                 }
                 i += 1  # Skip the URL value
             else:
@@ -123,13 +121,9 @@ def parse_control_servers(argv):
                     current_server["headers"].append(argv[i + 1])
                     i += 1
 
-            elif arg == "--control-identifier":
-                if i + 1 < len(argv) and not argv[i + 1].startswith("--"):
-                    current_server["identifier"] = argv[i + 1]
-                    i += 1
-
-            elif arg == "--opt-out":
-                current_server["opt_out"] = True
+            elif arg == "--control-identifier" and i + 1 < len(argv) and not argv[i + 1].startswith("--"):
+                current_server["identifier"] = argv[i + 1]
+                i += 1
 
         i += 1
 
@@ -238,12 +232,6 @@ def add_scan_arguments(scan_parser):
         metavar="NUM",
     )
     scan_parser.add_argument(
-        "--full-toxic-flows",
-        default=False,
-        action="store_true",
-        help="Show all tools in the toxic flows, by default only the first 3 are shown.",
-    )
-    scan_parser.add_argument(
         "--control-server",
         action="append",
         help="Upload the scan results to the provided control server URL. Can be specified multiple times for multiple control servers.",
@@ -257,12 +245,6 @@ def add_scan_arguments(scan_parser):
         "--control-identifier",
         action="append",
         help="Non-anonymous identifier used to identify the user to the preceding control server, e.g. email or serial number",
-    )
-    scan_parser.add_argument(
-        "--opt-out",
-        action="append_const",
-        const=True,
-        help="Opts out of sending a unique user identifier with every scan to the preceding control server.",
     )
 
 
@@ -299,7 +281,7 @@ def main():
             f"  {program_name} --json              # Output results in JSON format\n\n"
             f"  # Multiple control servers with individual options:\n"
             f'  {program_name} --control-server https://server1.com --control-server-H "Auth: token1" \\\n'
-            f"    --control-identifier user@example.com --opt-out \\\n"
+            f"    --control-identifier user@example.com \\\n"
             f'    --control-server https://server2.com --control-server-H "Auth: token2" \\\n'
             f"    --control-identifier serial-123\n"
         ),
@@ -491,7 +473,6 @@ async def evo(args):
         {
             "url": push_scan_url,
             "identifier": get_hostname() or None,
-            "opt_out": False,
             "headers": [f"x-client-id:{client_id}"],
         }
     ]
@@ -549,7 +530,6 @@ async def run_scan(args, mode: Literal["scan", "inspect"] = "scan") -> list[Scan
                 url=server_config["url"],
                 headers=parse_headers(server_config["headers"]),
                 identifier=server_config["identifier"],
-                opt_out=server_config["opt_out"],
             )
             for server_config in args.control_servers
         ]
@@ -557,7 +537,6 @@ async def run_scan(args, mode: Literal["scan", "inspect"] = "scan") -> list[Scan
             analysis_url=args.analysis_url,
             identifier=None,
             additional_headers=parse_headers(args.verification_H),
-            opt_out_of_identity=bool(hasattr(args, "opt_out_of_identity") and args.opt_out_of_identity),
             max_retries=3,
             skip_ssl_verify=skip_ssl_verify,
         )
@@ -576,7 +555,6 @@ async def run_scan(args, mode: Literal["scan", "inspect"] = "scan") -> list[Scan
 async def print_scan_inspect(mode="scan", args=None):
     json_output: bool = hasattr(args, "json") and args.json
     print_errors: bool = hasattr(args, "print_errors") and args.print_errors
-    full_toxic_flows: bool = hasattr(args, "full_toxic_flows") and args.full_toxic_flows
     full_description: bool = hasattr(args, "print_full_descriptions") and args.print_full_descriptions
     verbose: bool = hasattr(args, "verbose") and args.verbose
 
@@ -590,7 +568,6 @@ async def print_scan_inspect(mode="scan", args=None):
         print_scan_result(
             result,
             print_errors,
-            full_toxic_flows,
             inspect_mode=mode == "inspect",
             internal_issues=verbose,
             full_description=full_description,
