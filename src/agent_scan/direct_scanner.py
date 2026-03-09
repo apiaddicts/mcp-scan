@@ -66,7 +66,6 @@ async def scan_streamable_https(url: str, secure=True):
     with tempfile.NamedTemporaryFile() as tmp:
         tmp.write(config_file.encode())
         tmp.flush()
-        print(config_file)
         return await scan_mcp_config_file(tmp.name)
 
 

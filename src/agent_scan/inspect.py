@@ -157,7 +157,6 @@ async def inspect_extension(
     traffic_capture = TrafficCapture()
     if isinstance(config, StdioServer):
         try:
-            print("HERE 1")
             signature, _ = await check_server(config, timeout, traffic_capture, token)
             return InspectedExtensions(name=name, config=config, signature_or_error=signature)
         except Exception as e:
