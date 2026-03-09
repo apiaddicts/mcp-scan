@@ -284,6 +284,98 @@ class TestFullScanFlow:
         )
 
     @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
+    @pytest.mark.parametrize(
+        "direct_scan_path, expected_server_name",
+        [
+            ("streamable-http:localhost:8124/mcp", "http-mcp-server"),
+            ("sse:http://localhost:8123/sse", "sse-mcp-server"),
+        ],
+        ids=["streamable_http", "sse"],
+    )
+    def test_direct_scan(self, agent_scan_cmd, direct_scan_path, expected_server_name):
+        """Test scanning MCP servers via direct scan paths (e.g. streamable-http:host:port/path)."""
+        transport = "streamable-http" if "streamable-http" in direct_scan_path else "sse"
+        port = "8124" if transport == "streamable-http" else "8123"
+        process = subprocess.Popen(
+            [
+                "uv",
+                "run",
+                "python",
+                "tests/mcp_servers/multiple_transport_server.py",
+                "--transport",
+                transport,
+                "--port",
+                port,
+            ],
+        )
+        try:
+            import time
+
+            time.sleep(1)
+            result = subprocess.run(
+                [*agent_scan_cmd, "inspect", "--json", direct_scan_path],
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 0, f"Command failed with error: {result.stderr}"
+            output = json.loads(result.stdout)
+            assert direct_scan_path in output, (
+                f"Expected key '{direct_scan_path}' in output, got: {list(output.keys())}"
+            )
+            entry = output[direct_scan_path]
+            assert entry["error"] is None, f"Unexpected error: {entry['error']}"
+            assert len(entry["servers"]) == 1, f"Expected 1 server, got {len(entry['servers'])}"
+            server = entry["servers"][0]
+            assert server["name"] == expected_server_name
+            tool_names = {t["name"] for t in server["signature"]["tools"]}
+            assert tool_names == {"is_prime", "gcd", "lcm"}, f"Unexpected tools: {tool_names}"
+        finally:
+            process.terminate()
+            process.wait()
+
+    @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
+    @pytest.mark.parametrize(
+        "direct_scan_path, expected_server_name, expected_command, expected_args",
+        [
+            (
+                "npm:@modelcontextprotocol/server-test",
+                "@modelcontextprotocol/server-test",
+                "npx",
+                ["-y", "@modelcontextprotocol/server-test@latest"],
+            ),
+            ("npm:some-pkg@1.2.3", "some-pkg", "npx", ["-y", "some-pkg@1.2.3"]),
+            ("pypi:mcp-server-test", "mcp-server-test", "uvx", ["mcp-server-test@latest"]),
+            ("pypi:mcp-server-test@0.5.0", "mcp-server-test", "uvx", ["mcp-server-test@0.5.0"]),
+            (
+                "oci:ghcr.io/example/server",
+                "ghcr.io/example/server",
+                "docker",
+                ["run", "-i", "--rm", "ghcr.io/example/server"],
+            ),
+        ],
+        ids=["npm_latest", "npm_versioned", "pypi_latest", "pypi_versioned", "oci"],
+    )
+    def test_direct_scan_stdio_servers(
+        self, agent_scan_cmd, direct_scan_path, expected_server_name, expected_command, expected_args
+    ):
+        """Test that stdio-based direct scan paths produce the correct server configs (these servers won't actually start)."""
+        result = subprocess.run(
+            [*agent_scan_cmd, "inspect", "--json", direct_scan_path],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, f"Command failed with error: {result.stderr}"
+        output = json.loads(result.stdout)
+        assert direct_scan_path in output, f"Expected key '{direct_scan_path}' in output, got: {list(output.keys())}"
+        entry = output[direct_scan_path]
+        assert len(entry["servers"]) == 1, f"Expected 1 server, got {len(entry['servers'])}"
+        server = entry["servers"][0]
+        assert server["name"] == expected_server_name
+        assert server["server"]["command"] == expected_command
+        assert server["server"]["args"] == expected_args
+        assert server["error"] is not None, "Expected an error since the server binary doesn't exist"
+
+    @pytest.mark.parametrize("agent_scan_cmd", ["uv", "binary"], indirect=True)
     def test_vscode_settings_no_mcp(self, agent_scan_cmd, vscode_settings_no_mcp_file):
         """Test scanning VSCode settings with no MCP configurations."""
         result = subprocess.run(

@@ -3,6 +3,7 @@ import os
 
 from pydantic import BaseModel
 
+from agent_scan.direct_scanner import direct_scan_to_server_config, is_direct_scan
 from agent_scan.inspect import (
     get_mcp_config_per_client,
     inspect_client,
@@ -143,7 +144,19 @@ async def inspect_analyze_push_pipeline(
 async def client_to_inspect_from_path(
     path: str, use_path_as_client_name: bool = False, all_users: bool = False, scan_skills: bool = False
 ) -> list[ClientToInspect]:
-    if scan_skills and os.path.isdir(os.path.expanduser(path)):
+    if is_direct_scan(path):
+        server_name, server_config = direct_scan_to_server_config(path)
+        return [
+            ClientToInspect(
+                name="not-available" if use_path_as_client_name else path,
+                client_path=path,
+                mcp_configs={
+                    path: [(server_name, server_config)],
+                },
+                skills_dirs={},
+            )
+        ]
+    elif scan_skills and os.path.isdir(os.path.expanduser(path)):
         if os.path.exists(os.path.join(path, "SKILL.md")):
             # split last segment from all other dirs in the path (account for trailing slash)
             last_dir = os.path.basename(os.path.normpath(path))
